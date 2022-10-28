@@ -25,16 +25,16 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        replaceFragment(new MapsFragment());
+        replaceTopView(new MapsFragment());
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             switch(item.getItemId()) {
                 case R.id.maps:
-                    replaceFragment(new MapsFragment());
+                    replaceTopView(new MapsFragment());
                     System.out.println("maps");
                     break;
                 case R.id.profile:
-                    replaceFragment(new ProfileFragment());
+                    replaceTopView(new ProfileFragment());
                     System.out.println("profile");
                     break;
             }
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void replaceFragment(Fragment fragment) {
+    private void replaceTopView(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.top_view, fragment);
