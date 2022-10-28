@@ -23,10 +23,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.socalbeach4life.MapsActivity;
+import com.example.socalbeach4life.MainActivity;
 import com.example.socalbeach4life.R;
-import com.example.socalbeach4life.ui.login.LoginViewModel;
-import com.example.socalbeach4life.ui.login.LoginViewModelFactory;
 import com.example.socalbeach4life.databinding.ActivityLoginBinding;
 
 public class LoginActivity extends AppCompatActivity {
@@ -130,7 +128,7 @@ public class LoginActivity extends AppCompatActivity {
         String welcome = getString(R.string.welcome) + model.getDisplayName();
         // TODO : initiate successful logged in experience
         Toast.makeText(getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
-        Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+        Intent i = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(i);
     }
 
