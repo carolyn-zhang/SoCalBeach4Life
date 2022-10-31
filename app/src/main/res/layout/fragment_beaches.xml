@@ -4,7 +4,8 @@
     android:id="@+id/beaches"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.BeachesFragment">
+    tools:context=".fragments.BeachesFragment"
+    android:background="@color/purple_700">
         <ScrollView
             android:id="@+id/beachesScrollView"
             xmlns:android="http://schemas.android.com/apk/res/android"

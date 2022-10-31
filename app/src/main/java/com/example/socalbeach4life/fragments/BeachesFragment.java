@@ -63,7 +63,6 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
 
             LinearLayout layout = new LinearLayout(BeachList.getContext());
             layout.setOrientation(LinearLayout.VERTICAL);
-            layout.setBackgroundColor(Color.parseColor("blue"));
             for (JsonElement beach : beaches) {
                 JsonObject beachObj = beach.getAsJsonObject();
                 LinearLayout line = new LinearLayout(layout.getContext());

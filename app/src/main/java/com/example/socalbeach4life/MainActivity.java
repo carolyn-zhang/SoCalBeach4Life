@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
                     replaceBottomView(new BeachesFragment());
                     break;
                 case R.id.profile:
-                    replaceTopView(new ProfileFragment());
+                    replaceTopView(ProfileFragment.newInstance(extras.getString("userid")));
                     replaceBottomView(TripsFragment.newInstance(extras.getString("userid")));
                     break;
             }
