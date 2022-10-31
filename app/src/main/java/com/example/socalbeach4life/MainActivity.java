@@ -21,7 +21,6 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     public MapsFragment mapsFragment = new MapsFragment();
-    public ProfileFragment profileFragment = new ProfileFragment();
     public BeachesFragment beachesFragment = new BeachesFragment();
 
     @Override
@@ -38,8 +37,8 @@ public class MainActivity extends AppCompatActivity {
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             switch(item.getItemId()) {
                 case R.id.maps:
-                    replaceTopView(new MapsFragment());
-                    replaceBottomView(new BeachesFragment());
+                    replaceTopView(mapsFragment);
+                    replaceBottomView(beachesFragment);
                     break;
                 case R.id.profile:
                     replaceTopView(ProfileFragment.newInstance(extras.getString("userid")));
