@@ -7,6 +7,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -33,6 +34,7 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
 
     private YelpService yelpService = new YelpService();
     private LinearLayout beachListlayout;
+    private LinearLayout beachInfolayout;
     private ScrollView beachesScrollView;
     private MainActivity main;
     // beachMap maps the beaches name to its corresponding beach object
@@ -59,10 +61,11 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
         beachesScrollView = (ScrollView) view.findViewById(R.id.beachesScrollView);
 
         beachListlayout = new LinearLayout(beachesScrollView.getContext());
+        beachInfolayout = new LinearLayout(beachesScrollView.getContext());
         // Specify this class as delegate for async yelp call so
         // api call results will be returned to the processFinish() override
         // https://www.yelp.com/developers/documentation/v3/business_search
-        yelpService.executeTask(this, "businesses/search", "term", "beaches", "location", "Los Angeles", "sort_by", "distance");
+        yelpService.executeTask(this, "businesses/search", "term", "beach", "location", "Los Angeles", "sort_by", "distance");
     }
 
     @Override
@@ -123,8 +126,22 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             Double latitude = convertedObject.get("coordinates").getAsJsonObject().get("latitude").getAsDouble();
             Double longitude = convertedObject.get("coordinates").getAsJsonObject().get("longitude").getAsDouble();
 
-
-            // beachesScrollView.removeAllViews();
+            // TODO: display information about beach
+            beachesScrollView.removeAllViews();
+            Button returnButton = new Button(beachesScrollView.getContext());
+            returnButton.setText("Back To List");
+            returnButton.setOnClickListener((new View.OnClickListener() {
+                public void onClick(View v) {
+                    main.mapsFragment.resetCamera();
+                    beachesScrollView.removeAllViews();
+                    beachesScrollView.addView(beachListlayout);
+                }
+            }));
+            TextView locationTV = new TextView(beachesScrollView.getContext());
+            locationTV.setText(convertedObject.get("location").toString());
+            beachInfolayout.addView(returnButton);
+            beachInfolayout.addView(locationTV);
+            beachesScrollView.addView(beachInfolayout);
 
 
             // move google maps camera location to selected beach

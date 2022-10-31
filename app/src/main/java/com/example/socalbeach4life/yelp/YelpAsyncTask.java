@@ -22,7 +22,7 @@ public class YelpAsyncTask extends AsyncTask<String, String, String> {
         for(int i = 1; i < strings.length - 1; i += 2) {
             String key = strings[i];
             String value = strings[i + 1];
-            value = value.replace(' ', '%');
+            value = value.replace(" ", "%20");
             if (i > 1) builder += "&";
             builder += key + "=" + value;
         }

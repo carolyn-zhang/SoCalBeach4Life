@@ -29,8 +29,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback{
         mapReady = true;
         // TODO: Set to user's current location
         LatLng LA = new LatLng(34.0522, -118.2437);
-        googleMap.addMarker(new MarkerOptions().position(LA).title("Marker in LA"));
         googleMap.setMinZoomPreference(10);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
+    }
+
+    public void resetCamera() {
+        // TODO: Also set back to user's current location.
+        LatLng LA = new LatLng(34.0522, -118.2437);
+        googleMap.setMinZoomPreference(10);
+        googleMap.setMaxZoomPreference(10);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
     }
 
