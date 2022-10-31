@@ -54,7 +54,9 @@ public class Login extends AppCompatActivity {
                                     final String getPassword = idSnapshot.child("password").getValue(String.class);
                                     if(getPassword.equals(passwordText)) { // login success
                                         Toast.makeText(Login.this, "Successfully logged in", Toast.LENGTH_SHORT).show();
-                                        startActivity(new Intent(Login.this, MainActivity.class));
+                                        Intent i = new Intent(Login.this, MainActivity.class);
+                                        i.putExtra("userid", idSnapshot.getKey());
+                                        startActivity(i);
                                         finish();
                                     } else { // wrong password entered
                                         Toast.makeText(Login.this, "Email or password is invalid", Toast.LENGTH_SHORT).show();
@@ -63,7 +65,7 @@ public class Login extends AppCompatActivity {
                                 }
                             }
 
-                            if(!foundEmail) {
+                            if(!foundEmail) { // no account associated with email found
                                 Toast.makeText(Login.this, "Email or password is invalid", Toast.LENGTH_SHORT).show();
                             }
                         }
