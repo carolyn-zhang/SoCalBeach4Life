@@ -83,12 +83,16 @@ public class ProfileFragment extends Fragment {
                     if(idSnapshot.getKey().equals(userid)) {
                         final String getName = idSnapshot.child("name").getValue(String.class);
                         final String getEmail = idSnapshot.child("email").getValue(String.class);
+                        final int getNumTrips = (int) idSnapshot.child("trips").getChildrenCount();
 
                         TextView displayusername = (TextView) view.findViewById(R.id.user_name);
                         displayusername.setText(getName);
 
                         TextView displayuseremail = (TextView) view.findViewById(R.id.user_email);
                         displayuseremail.setText(getEmail);
+
+                        TextView displayusernumtrips = (TextView) view.findViewById(R.id.user_num_trips);
+                        displayusernumtrips.setText("number of trips: " + getNumTrips);
 
                         break;
                     }
@@ -100,16 +104,6 @@ public class ProfileFragment extends Fragment {
 
             }
         });
-
-
-
-
-
-
-
         return view;
-
-        // Inflate the layout for this fragment
-//        return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 }

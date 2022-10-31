@@ -4,9 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".fragments.ProfileFragment"
-    android:background="#CBC3E3"
-    >
+    tools:context=".fragments.ProfileFragment">
 
     <TextView
         android:paddingTop="20dp"
@@ -45,7 +43,7 @@
         android:id="@+id/user_num_trips"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="user_num_trips"
+        android:text="number of trips: "
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:textSize="24sp"/>
