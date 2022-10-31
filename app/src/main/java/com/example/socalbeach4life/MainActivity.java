@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.ui.AppBarConfiguration;
 
 import com.example.socalbeach4life.databinding.ActivityMainBinding;
+import com.example.socalbeach4life.fragments.TripsFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,10 +35,8 @@ public class MainActivity extends AppCompatActivity {
                     replaceTopView(new MapsFragment());
                     break;
                 case R.id.profile:
-//                    Fragment profile = new ProfileFragment();
-//                    profile.setArguments(extras);
-
                     replaceTopView(ProfileFragment.newInstance(extras.getString("userid")));
+                    replaceBottomView(TripsFragment.newInstance(extras.getString("userid")));
                     break;
             }
             return true;
@@ -49,6 +48,13 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.top_view, fragment);
+        fragmentTransaction.commit();
+    }
+
+    private void replaceBottomView(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.bottom_view, fragment);
         fragmentTransaction.commit();
     }
 }
