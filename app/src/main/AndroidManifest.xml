@@ -52,5 +52,5 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
     </application>
-
+    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
