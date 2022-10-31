@@ -43,19 +43,27 @@ public class Login extends AppCompatActivity {
                     databaseReference.child("users").addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            // check if email exists in firebase database
-                            if(snapshot.hasChild(emailText)) { // account with this email exists
-                                // get password and match it with user entered password
-                                final String getPassword = snapshot.child(emailText).child("password").getValue(String.class);
+                            boolean foundEmail = false;
+                            // loop through ids and check if account exists
+                            for (DataSnapshot idSnapshot: snapshot.getChildren()) {
+                                if(idSnapshot.child("email").getValue(String.class).equals(emailText)) {
+                                    // account with this email exists
+                                    foundEmail = true;
 
-                                if(getPassword.equals(passwordText)) { // login success
-                                    Toast.makeText(Login.this, "Successfully logged in", Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(Login.this, MainActivity.class));
-                                    finish();
-                                } else { // wrong password entered
-                                    Toast.makeText(Login.this, "Email or password is invalid", Toast.LENGTH_SHORT).show();
+                                    // get password and match it with user entered password
+                                    final String getPassword = idSnapshot.child("password").getValue(String.class);
+                                    if(getPassword.equals(passwordText)) { // login success
+                                        Toast.makeText(Login.this, "Successfully logged in", Toast.LENGTH_SHORT).show();
+                                        startActivity(new Intent(Login.this, MainActivity.class));
+                                        finish();
+                                    } else { // wrong password entered
+                                        Toast.makeText(Login.this, "Email or password is invalid", Toast.LENGTH_SHORT).show();
+                                    }
+                                    break;
                                 }
-                            } else { // no account associated with email
+                            }
+
+                            if(!foundEmail) {
                                 Toast.makeText(Login.this, "Email or password is invalid", Toast.LENGTH_SHORT).show();
                             }
                         }
@@ -73,6 +81,26 @@ public class Login extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(Login.this, Register.class));
+            }
+        });
+
+
+    }
+
+    public interface OnUserActionListener {
+        void onExists(Boolean exists);
+    }
+
+    public void userEmailExist(final String email, final OnUserActionListener listener) {
+        databaseReference.child("users").orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                listener.onExists(dataSnapshot.exists() );
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
             }
         });
     }

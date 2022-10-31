@@ -49,31 +49,40 @@ public class Register extends AppCompatActivity {
                 else if(!passwordText.equals(conPasswordText)) {
                     Toast.makeText(Register.this, "Passwords don't match", Toast.LENGTH_SHORT).show();
                 } else {
-
-                    databaseReference.child("users").addListenerForSingleValueEvent(new ValueEventListener() {
+                    databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            // check if email is not already registered
-                            if(dataSnapshot.hasChild(emailText)) {
-                                System.out.println("sending data to firebase realtime database");
-                                Toast.makeText(Register.this, "Email is already associated with an account", Toast.LENGTH_SHORT).show();
-                            } else { // send data to firebase realtime database
-                                 // email is unique identifier for each user
-                                databaseReference.child("users").child(emailText).child("name").setValue(nameText);
-                                databaseReference.child("users").child(emailText).child("password").setValue(passwordText);
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            // get next user id
+                            final int nextid = snapshot.child("userlastid").getValue(Integer.class) + 1;
+                            final String stringnextid = String.valueOf(nextid);
 
-                                 //show success message for account registration
+                            boolean accountAlreadyExists = false;
+
+                            DataSnapshot userSnapshot = snapshot.child("users");
+                            // loop through ids and check if email already associated with an account
+                            for (DataSnapshot idSnapshot: userSnapshot.getChildren()) {
+                                if(idSnapshot.child("email").getValue(String.class).equals(emailText)) {
+                                    accountAlreadyExists = true;
+                                    Toast.makeText(Register.this, "Email is already associated with an account", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                            if(!accountAlreadyExists) {
+                                databaseReference.child("users").child(stringnextid).child("id").setValue(nextid);
+                                databaseReference.child("users").child(stringnextid).child("name").setValue(nameText);
+                                databaseReference.child("users").child(stringnextid).child("email").setValue(emailText);
+                                databaseReference.child("users").child(stringnextid).child("password").setValue(passwordText);
+                                databaseReference.child("userlastid").setValue(nextid);
                                 Toast.makeText(Register.this, "Account registration success", Toast.LENGTH_SHORT).show();
                                 finish();
                             }
                         }
 
                         @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                        public void onCancelled(@NonNull DatabaseError error) {
 
                         }
                     });
-
                 }
             }
         });
@@ -85,9 +94,4 @@ public class Register extends AppCompatActivity {
             }
         });
     }
-
-//    @Override
-//    public void onBackPressed() {
-//        super.onBackPressed();
-//    }
 }
