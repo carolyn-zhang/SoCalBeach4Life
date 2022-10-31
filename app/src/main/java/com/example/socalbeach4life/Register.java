@@ -16,14 +16,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 
-import android.util.Log;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.OnFailureListener;
-
 public class Register extends AppCompatActivity {
     // create DatabaseReference object to access realtime database
-//    FirebaseDatabase database = FirebaseDatabase.getInstance("https://socalbeach4life-2bd0d-default-rtdb.firebaseio.com/");
-//    DatabaseReference usersRef = database.getReference("users");
     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReferenceFromUrl("https://socalbeach4life-2bd0d-default-rtdb.firebaseio.com/");
 
     @Override
@@ -48,12 +42,6 @@ public class Register extends AppCompatActivity {
                 final String passwordText = password.getText().toString();
                 final String conPasswordText = conPassword.getText().toString();
 
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference myRef = database.getReference("message");
-
-                myRef.setValue("Hello, World!!!");
-                System.out.println("value settt");
-
                 // check if user filled all fields
                 if(nameText.isEmpty() || emailText.isEmpty() || passwordText.isEmpty() || conPasswordText.isEmpty()) {
                     Toast.makeText(Register.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
@@ -65,19 +53,14 @@ public class Register extends AppCompatActivity {
                     databaseReference.child("users").addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            System.out.println("here");
                             // check if email is not already registered
                             if(dataSnapshot.hasChild(emailText)) {
                                 System.out.println("sending data to firebase realtime database");
                                 Toast.makeText(Register.this, "Email is already associated with an account", Toast.LENGTH_SHORT).show();
                             } else { // send data to firebase realtime database
-                                System.out.println("sending data to firebase realtime database");
-                                 //email is unique identifier for each user
-                                    databaseReference.child("message").setValue("bruh");
+                                 // email is unique identifier for each user
                                 databaseReference.child("users").child(emailText).child("name").setValue(nameText);
                                 databaseReference.child("users").child(emailText).child("password").setValue(passwordText);
-                                databaseReference.child("users").child(emailText).child("trips").setValue(null);
-                                databaseReference.child("users").child(emailText).child("review").setValue(null);
 
                                  //show success message for account registration
                                 Toast.makeText(Register.this, "Account registration success", Toast.LENGTH_SHORT).show();
