@@ -15,7 +15,7 @@
         android:textStyle="bold"
         android:gravity="center"
         android:textSize="30sp"
-        android:textColor="#CC5500"/>
+        android:textColor="@color/purple_700"/>
 
     <TextView
         android:layout_width="match_parent"

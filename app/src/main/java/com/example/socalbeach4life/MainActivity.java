@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Bundle extras = getIntent().getExtras();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -31,11 +32,12 @@ public class MainActivity extends AppCompatActivity {
             switch(item.getItemId()) {
                 case R.id.maps:
                     replaceTopView(new MapsFragment());
-                    System.out.println("maps");
                     break;
                 case R.id.profile:
-                    replaceTopView(new ProfileFragment());
-                    System.out.println("profile");
+//                    Fragment profile = new ProfileFragment();
+//                    profile.setArguments(extras);
+
+                    replaceTopView(ProfileFragment.newInstance(extras.getString("userid")));
                     break;
             }
             return true;
