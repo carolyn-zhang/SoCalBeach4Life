@@ -18,26 +18,44 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import com.example.socalbeach4life.R;
 
-public class MapsFragment extends Fragment {
+public class MapsFragment extends Fragment implements OnMapReadyCallback{
 
-    private OnMapReadyCallback callback = new OnMapReadyCallback() {
+    public GoogleMap googleMap;
+    private Boolean mapReady = false;
 
-        /**
-         * Manipulates the map once available.
-         * This callback is triggered when the map is ready to be used.
-         * This is where we can add markers or lines, add listeners or move the camera.
-         * In this case, we just add a marker near Sydney, Australia.
-         * If Google Play services is not installed on the device, the user will be prompted to
-         * install it inside the SupportMapFragment. This method will only be triggered once the
-         * user has installed Google Play services and returned to the app.
-         */
-        @Override
-        public void onMapReady(GoogleMap googleMap) {
-            LatLng sydney = new LatLng(-34, 151);
-            googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        this.googleMap = googleMap;
+        mapReady = true;
+        // TODO: Set to user's current location
+        LatLng LA = new LatLng(34.0522, -118.2437);
+        googleMap.setMinZoomPreference(10);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
+    }
+
+    public void resetCamera() {
+        // TODO: Also set back to user's current location.
+        LatLng LA = new LatLng(34.0522, -118.2437);
+        googleMap.setMinZoomPreference(10);
+        googleMap.setMaxZoomPreference(10);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
+    }
+
+    public void setMarker(double latitude, double longitude) {
+        if(mapReady) {
+            LatLng newLocation = new LatLng(latitude, longitude);
+            googleMap.addMarker(new MarkerOptions().position(newLocation));
         }
-    };
+    }
+
+    public void setLocation(double latitude, double longitude) {
+        if(mapReady) {
+            LatLng newLocation = new LatLng(latitude, longitude);
+            googleMap.addMarker(new MarkerOptions().position(newLocation));
+            googleMap.setMinZoomPreference(15);
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(newLocation));
+        }
+    }
 
     @Nullable
     @Override
@@ -53,7 +71,7 @@ public class MapsFragment extends Fragment {
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
-            mapFragment.getMapAsync(callback);
+            mapFragment.getMapAsync(this);
         }
     }
 }
