@@ -83,25 +83,5 @@ public class Login extends AppCompatActivity {
                 startActivity(new Intent(Login.this, Register.class));
             }
         });
-
-
-    }
-
-    public interface OnUserActionListener {
-        void onExists(Boolean exists);
-    }
-
-    public void userEmailExist(final String email, final OnUserActionListener listener) {
-        databaseReference.child("users").orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                listener.onExists(dataSnapshot.exists() );
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
     }
 }
