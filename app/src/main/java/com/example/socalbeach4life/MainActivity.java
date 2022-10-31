@@ -2,6 +2,7 @@ package com.example.socalbeach4life;
 
 import android.os.Bundle;
 
+import com.example.socalbeach4life.fragments.BeachesFragment;
 import com.example.socalbeach4life.fragments.MapsFragment;
 import com.example.socalbeach4life.fragments.ProfileFragment;
 
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         replaceTopView(new MapsFragment());
 
+        replaceBottomView(new BeachesFragment());
+
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             switch(item.getItemId()) {
                 case R.id.maps:
@@ -49,6 +52,13 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.top_view, fragment);
+        fragmentTransaction.commit();
+    }
+
+    private void replaceBottomView(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.bottom_view, fragment);
         fragmentTransaction.commit();
     }
 }
