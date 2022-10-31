@@ -34,6 +34,7 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
     private YelpService yelpService = new YelpService();
     private LinearLayout beachListlayout;
     private ScrollView beachesScrollView;
+    private MainActivity main;
     // beachMap maps the beaches name to its corresponding beach object
     // public Map<String, Beach> beachMap = new HashMap<String, Beach>();
 
@@ -54,6 +55,7 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
         super.onViewCreated(view, savedInstanceState);
         super.onCreate(savedInstanceState);
 
+        main = (MainActivity) getActivity();
         beachesScrollView = (ScrollView) view.findViewById(R.id.beachesScrollView);
 
         beachListlayout = new LinearLayout(beachesScrollView.getContext());
@@ -110,6 +112,10 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                 // TODO: https://www.yelp.com/developers/documentation/v3/business
                 line.setOnClickListener(v -> yelpService.executeTask(this, "businesses/" + beachObj.get("id").getAsString()));
                 beachListlayout.addView(line, layoutParams);
+
+                Double latitude = beachObj.get("coordinates").getAsJsonObject().get("latitude").getAsDouble();
+                Double longitude = beachObj.get("coordinates").getAsJsonObject().get("longitude").getAsDouble();
+                main.mapsFragment.setMarker(latitude, longitude);
             }
             beachesScrollView.addView(beachListlayout);
         } else if(endpoint.contains("businesses/")) {
@@ -122,7 +128,6 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
 
 
             // move google maps camera location to selected beach
-            MainActivity main = (MainActivity) getActivity();
             main.mapsFragment.setLocation(latitude, longitude);
             Log.d("a", "a");
         }

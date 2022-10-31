@@ -27,9 +27,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback{
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
         mapReady = true;
-        LatLng sydney = new LatLng(-34, 151);
-        googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        // TODO: Set to user's current location
+        LatLng LA = new LatLng(34.0522, -118.2437);
+        googleMap.addMarker(new MarkerOptions().position(LA).title("Marker in LA"));
+        googleMap.setMinZoomPreference(10);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
+    }
+
+    public void setMarker(double latitude, double longitude) {
+        if(mapReady) {
+            LatLng newLocation = new LatLng(latitude, longitude);
+            googleMap.addMarker(new MarkerOptions().position(newLocation));
+        }
     }
 
     public void setLocation(double latitude, double longitude) {
