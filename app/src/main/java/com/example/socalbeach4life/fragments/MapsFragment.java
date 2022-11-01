@@ -9,19 +9,28 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.socalbeach4life.MainActivity;
+import com.example.socalbeach4life.yelp.YelpService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import com.example.socalbeach4life.R;
 
-public class MapsFragment extends Fragment implements OnMapReadyCallback{
+import java.util.ArrayList;
+import java.util.Objects;
+
+public class MapsFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     public GoogleMap googleMap;
     private Boolean mapReady = false;
+    private MainActivity main;
+    private ArrayList<Marker> markerArray = new ArrayList<Marker>();
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -31,6 +40,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback{
         LatLng LA = new LatLng(34.0522, -118.2437);
         googleMap.setMinZoomPreference(10);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
+        googleMap.setOnMarkerClickListener(this);
     }
 
     public void resetCamera() {
@@ -41,17 +51,66 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback{
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
     }
 
-    public void setMarker(double latitude, double longitude) {
+    public void setMarker(double latitude, double longitude, String title, String tag) {
         if(mapReady) {
             LatLng newLocation = new LatLng(latitude, longitude);
-            googleMap.addMarker(new MarkerOptions().position(newLocation));
+            Marker newMarker = googleMap.addMarker(new MarkerOptions()
+                    .position(newLocation)
+                    .title(title));
+            // snippets = Parking, Restaurant, Beach
+            // colors: Parking = green, Restaurant = blue, Beach = red
+            if (newMarker != null) {
+                newMarker.setTag(tag);
+                if (tag.contains("Parking")) {
+                    newMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                } else if (tag.contains("Restaurant")) {
+                    newMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                } else if (tag.contains("Beach")) {
+                    newMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                }
+            }
+            markerArray.add(newMarker);
         }
+    }
+
+    @Override
+    public boolean onMarkerClick(final Marker marker) {
+        String tag = (String) marker.getTag();
+        LatLng pos = marker.getPosition();
+        double latitude = pos.latitude;
+        double longitude = pos.longitude;
+        if (tag.contains("Beach")) {
+            setLocation(latitude, longitude);
+
+            // TODO: Hide other parking lot and restaurant markers
+            for (int i = markerArray.size() - 1; i > -1; i--) {
+                Marker m = markerArray.get(i);
+                String mTag = (String) m.getTag();
+                if(mTag.contains("Parking") || mTag.contains("Restaurant")) {
+                    m.remove();
+                    markerArray.remove(i);
+                }
+            }
+
+            // Show beach information in bottom fragment
+            main = (MainActivity) getActivity();
+            String beachID = tag.substring(tag.indexOf(' ') + 1);
+            YelpService yelpService = new YelpService();
+            yelpService.executeTask(main.beachesFragment, "businesses/" + beachID);
+
+        } else if (tag.contains("Parking")) {
+            // TODO: route to parking lot
+            ;
+        } else if (tag.contains("Restaurant")) {
+            // TODO: show restaurant information in bottom fragment
+            ;
+        }
+        return false;
     }
 
     public void setLocation(double latitude, double longitude) {
         if(mapReady) {
             LatLng newLocation = new LatLng(latitude, longitude);
-            googleMap.addMarker(new MarkerOptions().position(newLocation));
             googleMap.setMinZoomPreference(15);
             googleMap.moveCamera(CameraUpdateFactory.newLatLng(newLocation));
         }
