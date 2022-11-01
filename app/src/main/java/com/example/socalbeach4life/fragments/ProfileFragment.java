@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.example.socalbeach4life.Login;
 import com.example.socalbeach4life.MainActivity;
+import com.example.socalbeach4life.Register;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
@@ -104,6 +105,14 @@ public class ProfileFragment extends Fragment {
 
             }
         });
+
+        view.findViewById(R.id.logout_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), Login.class));
+            }
+        });
+
         return view;
     }
 }
