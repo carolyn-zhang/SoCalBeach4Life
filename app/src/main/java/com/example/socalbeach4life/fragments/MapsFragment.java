@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.socalbeach4life.MainActivity;
+import com.example.socalbeach4life.maps.FetchURL;
+import com.example.socalbeach4life.maps.TaskLoadedCallback;
 import com.example.socalbeach4life.yelp.YelpService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -21,16 +23,19 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import com.example.socalbeach4life.R;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
-public class MapsFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+public class MapsFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener
+        {
 
     public GoogleMap googleMap;
     private Boolean mapReady = false;
     private MainActivity main;
     private ArrayList<Marker> markerArray = new ArrayList<Marker>();
+    public Polyline currentPolyline;
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -42,6 +47,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
         googleMap.setOnMarkerClickListener(this);
     }
+
+
+
+
 
     public void resetCamera() {
         // TODO: Also set back to user's current location.
@@ -77,6 +86,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     public boolean onMarkerClick(final Marker marker) {
         String tag = (String) marker.getTag();
         LatLng pos = marker.getPosition();
+
         double latitude = pos.latitude;
         double longitude = pos.longitude;
         if (tag.contains("Beach")) {
@@ -98,6 +108,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             YelpService yelpService = new YelpService();
             yelpService.executeTask(main.beachesFragment, "businesses/" + beachID);
 
+            // test: show route to beach, TODO: move this, change to for parking lot
+            // pos is the location of the beach marker clicked
+            LatLng uscLoc = new LatLng(34.0224, -118.2851);
+            String url = getRouteURL(pos, uscLoc, "driving");
+            new FetchURL(this.getContext()).execute(url, "driving");
         } else if (tag.contains("Parking")) {
             // TODO: route to parking lot
             ;
@@ -106,6 +121,23 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             ;
         }
         return false;
+    }
+
+    private String getRouteURL(LatLng origin, LatLng dest, String directionMode) {
+        // Origin of route
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+        // Destination of route
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
+        // Mode
+        String mode = "mode=" + directionMode;
+        // Building the parameters to the web service
+        String parameters = str_origin + "&" + str_dest + "&" + mode;
+        // Output format
+        String output = "json";
+        // Building the URL to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?"
+                + parameters + "&key=" + getString(R.string.google_maps_key);
+        return url;
     }
 
     public void setLocation(double latitude, double longitude) {
@@ -133,4 +165,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             mapFragment.getMapAsync(this);
         }
     }
-}
+
+        }
+
