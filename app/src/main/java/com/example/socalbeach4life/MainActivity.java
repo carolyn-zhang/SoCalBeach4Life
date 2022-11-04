@@ -15,8 +15,10 @@ import androidx.navigation.ui.AppBarConfiguration;
 
 import com.example.socalbeach4life.databinding.ActivityMainBinding;
 import com.example.socalbeach4life.fragments.TripsFragment;
+import com.example.socalbeach4life.maps.TaskLoadedCallback;
+import com.google.android.gms.maps.model.PolylineOptions;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TaskLoadedCallback {
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
@@ -62,5 +64,12 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.bottom_view, fragment);
         fragmentTransaction.commit();
+    }
+
+    @Override
+    public void onTaskDone(Object... values) {
+        if (mapsFragment.currentPolyline != null)
+            mapsFragment.currentPolyline.remove();
+        mapsFragment.currentPolyline = mapsFragment.googleMap.addPolyline((PolylineOptions) values[0]);
     }
 }
