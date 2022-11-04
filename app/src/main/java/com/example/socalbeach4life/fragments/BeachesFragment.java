@@ -79,7 +79,6 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             JsonArray beaches = (JsonArray) convertedObject.get("businesses");
 
             beachListlayout.setOrientation(LinearLayout.VERTICAL);
-            beachListlayout.setBackgroundColor(Color.parseColor("blue"));
             for (JsonElement beach : beaches) {
                 JsonObject beachObj = beach.getAsJsonObject();
                 LinearLayout line = new LinearLayout(beachListlayout.getContext());
@@ -156,54 +155,58 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             beachInfolayout.addView(addressTV, layoutParams);
             beachInfolayout.addView(cityTV, layoutParams);
 
+//            System.out.println(convertedObject);
             // hours text
-            JsonArray hoursArray = convertedObject.get("hours").getAsJsonArray();
-            JsonArray openHoursArray = hoursArray.get(0).getAsJsonObject().get("open").getAsJsonArray();
-            days.put(0, "Monday");
-            days.put(1, "Tuesday");
-            days.put(2, "Wednesday");
-            days.put(3, "Thursday");
-            days.put(4, "Friday");
-            days.put(5, "Saturday");
-            days.put(6, "Sunday");
-            for(int i = 0; i < openHoursArray.size(); i++) {
-                JsonObject dayHours = openHoursArray.get(i).getAsJsonObject();
-                Integer startInt = dayHours.get("start").getAsInt();
-                Integer endInt = dayHours.get("end").getAsInt();
-                String start = "";
-                String end = "";
-                if (startInt < 1000) {
-                    start = startInt.toString().substring(0, 1) + ":" + startInt.toString().substring(1) + " AM";
-                } else if (startInt < 1200) {
-                    start = startInt.toString().substring(0, 2) + ":" + startInt.toString().substring(2) + " AM";
-                } else if (startInt < 1300) {
-                    start = startInt.toString().substring(0, 2) + ":" + startInt.toString().substring(2) + " PM";
-                } else if (startInt < 2200) {
-                    startInt -= 1200;
-                    start = startInt.toString().substring(0, 1) + ":" + startInt.toString().substring(1) + " PM";
-                } else {
-                    startInt -= 1200;
-                    start = startInt.toString().substring(0, 2) + ":" + startInt.toString().substring(2) + " PM";
+            if(convertedObject.get("hours") != null) {
+                JsonArray hoursArray = convertedObject.get("hours").getAsJsonArray();
+                JsonArray openHoursArray = hoursArray.get(0).getAsJsonObject().get("open").getAsJsonArray();
+                days.put(0, "Monday");
+                days.put(1, "Tuesday");
+                days.put(2, "Wednesday");
+                days.put(3, "Thursday");
+                days.put(4, "Friday");
+                days.put(5, "Saturday");
+                days.put(6, "Sunday");
+                for(int i = 0; i < openHoursArray.size(); i++) {
+                    JsonObject dayHours = openHoursArray.get(i).getAsJsonObject();
+                    Integer startInt = dayHours.get("start").getAsInt();
+                    Integer endInt = dayHours.get("end").getAsInt();
+                    String start = "";
+                    String end = "";
+                    if (startInt < 1000) {
+                        start = startInt.toString().substring(0, 1) + ":" + startInt.toString().substring(1) + " AM";
+                    } else if (startInt < 1200) {
+                        start = startInt.toString().substring(0, 2) + ":" + startInt.toString().substring(2) + " AM";
+                    } else if (startInt < 1300) {
+                        start = startInt.toString().substring(0, 2) + ":" + startInt.toString().substring(2) + " PM";
+                    } else if (startInt < 2200) {
+                        startInt -= 1200;
+                        start = startInt.toString().substring(0, 1) + ":" + startInt.toString().substring(1) + " PM";
+                    } else {
+                        startInt -= 1200;
+                        start = startInt.toString().substring(0, 2) + ":" + startInt.toString().substring(2) + " PM";
+                    }
+                    if (endInt < 1000) {
+                        end = endInt.toString().substring(0, 1) + ":" + endInt.toString().substring(1) + " AM";
+                    }  else if (endInt < 1200) {
+                        end = endInt.toString().substring(0, 2) + ":" + endInt.toString().substring(2) + " AM";
+                    } else if (endInt < 1300) {
+                        end = endInt.toString().substring(0, 2) + ":" + endInt.toString().substring(2) + " PM";
+                    } else if (startInt < 2200) {
+                        endInt -= 1200;
+                        end = endInt.toString().substring(0, 1) + ":" + endInt.toString().substring(1) + " PM";
+                    } else {
+                        endInt -= 1200;
+                        end = endInt.toString().substring(0, 2) + ":" + endInt.toString().substring(2) + " PM";
+                    }
+                    Integer day = dayHours.get("day").getAsInt();
+                    TextView dayTV = new TextView(beachesScrollView.getContext());
+                    String dayString = days.get(day) + "   " + start + " - " + end + "\n";
+                    dayTV.setText(dayString);
+                    beachInfolayout.addView(dayTV, layoutParams);
                 }
-                if (endInt < 1000) {
-                    end = endInt.toString().substring(0, 1) + ":" + endInt.toString().substring(1) + " AM";
-                }  else if (endInt < 1200) {
-                    end = endInt.toString().substring(0, 2) + ":" + endInt.toString().substring(2) + " AM";
-                } else if (endInt < 1300) {
-                    end = endInt.toString().substring(0, 2) + ":" + endInt.toString().substring(2) + " PM";
-                } else if (startInt < 2200) {
-                    endInt -= 1200;
-                    end = endInt.toString().substring(0, 1) + ":" + endInt.toString().substring(1) + " PM";
-                } else {
-                    endInt -= 1200;
-                    end = endInt.toString().substring(0, 2) + ":" + endInt.toString().substring(2) + " PM";
-                }
-                Integer day = dayHours.get("day").getAsInt();
-                TextView dayTV = new TextView(beachesScrollView.getContext());
-                String dayString = days.get(day) + "   " + start + " - " + end + "\n";
-                dayTV.setText(dayString);
-                beachInfolayout.addView(dayTV, layoutParams);
             }
+
 
             beachInfolayout.addView(returnButton, layoutParams);
             beachesScrollView.addView(beachInfolayout);
