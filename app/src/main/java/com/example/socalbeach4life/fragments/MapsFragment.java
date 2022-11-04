@@ -28,7 +28,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 
-public class MapsFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, TaskLoadedCallback
+public class MapsFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener
         {
 
     public GoogleMap googleMap;
@@ -108,15 +108,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             YelpService yelpService = new YelpService();
             yelpService.executeTask(main.beachesFragment, "businesses/" + beachID);
 
-            // test: show route to beach, later change to parking lot
-            // pos is the location of the marker clicked
+            // test: show route to beach, TODO: move this, change to for parking lot
+            // pos is the location of the beach marker clicked
             LatLng uscLoc = new LatLng(34.0224, -118.2851);
             String url = getRouteURL(pos, uscLoc, "driving");
-            System.out.println(url);
-
             new FetchURL(this.getContext()).execute(url, "driving");
-
-
         } else if (tag.contains("Parking")) {
             // TODO: route to parking lot
             ;
@@ -170,11 +166,5 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         }
     }
 
-            @Override
-            public void onTaskDone(Object... values) {
-                if (currentPolyline != null)
-                    currentPolyline.remove();
-                currentPolyline = googleMap.addPolyline((PolylineOptions) values[0]);
-            }
         }
 
