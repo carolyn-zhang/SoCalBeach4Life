@@ -37,7 +37,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     private MainActivity main;
     private ArrayList<Marker> markerArray = new ArrayList<Marker>();
     public Polyline currentPolyline;
-    public Marker currentMarker;
     public Button etaButton;
 
     @Override
@@ -50,9 +49,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
         googleMap.setOnMarkerClickListener(this);
     }
-
-
-
 
 
     public void resetCamera() {
@@ -89,7 +85,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     public boolean onMarkerClick(final Marker marker) {
         String tag = (String) marker.getTag();
         LatLng pos = marker.getPosition();
-        currentMarker = marker;
 
         double latitude = pos.latitude;
         double longitude = pos.longitude;
@@ -116,7 +111,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             // pos is the location of the beach marker clicked
             LatLng uscLoc = new LatLng(34.0224, -118.2851);
             String url = getRouteURL(pos, uscLoc, "driving");
-            System.out.println(url);
             new FetchURL(this.getContext()).execute(url, "driving");
         } else if (tag.contains("Parking")) {
             // TODO: route to parking lot
