@@ -25,7 +25,6 @@ public class DataParser {
                 List path = new ArrayList<>();
                 /** Traversing all legs */
                 for (int j = 0; j < jLegs.length(); j++) {
-                    System.out.println("DURATION");
                     JSONObject duration_obj = ((JSONObject) jLegs.get(j)).getJSONObject("duration");
                     duration = String.valueOf(duration_obj.get("text"));
                 }
