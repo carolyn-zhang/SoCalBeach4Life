@@ -2,18 +2,24 @@ package com.example.socalbeach4life.yelp;
 
 import android.os.AsyncTask;
 
+import com.example.socalbeach4life.MainActivity;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class YelpAsyncTask extends AsyncTask<String, String, String> {
+public class YelpAsyncTask extends AsyncTask<Object, Object, ArrayList<Object>> {
     public YelpAsyncResponse delegate = null;
 
     @Override
-    protected String doInBackground(String... strings) {
+    protected ArrayList<Object> doInBackground(Object... objects) {
+        MainActivity main = (MainActivity) objects[0];
+        String[] strings = (String[]) objects[1];
         String BASE_URL = "https://api.yelp.com/v3/";
         String API_KEY = "hGQVfT2R3h6Ww_y-djRk-G431FSipINxuilnFFBcwFmbJsO2azyVCi2ZEjRUYL4gSi4_D-PdXg6OqVKiotXxCyPWphPDN3D9dfi5cp1EwGEu2KF5XqfhXMSTcpBZY3Yx";
         OkHttpClient client = new OkHttpClient().newBuilder().build();
@@ -49,7 +55,10 @@ public class YelpAsyncTask extends AsyncTask<String, String, String> {
             System.out.println("Yelp API Failure.");
             return null;
         }
-        return endpoint + "|" + responseString;
+        ArrayList<Object> resObjects = new ArrayList<>();
+        resObjects.add(main);
+        resObjects.add(endpoint + "|" + responseString);
+        return resObjects;
     }
 
     @Override
@@ -58,9 +67,9 @@ public class YelpAsyncTask extends AsyncTask<String, String, String> {
     }
 
     @Override
-    protected void onPostExecute(String response) {
+    protected void onPostExecute(ArrayList<Object> objects) {
         //https://stackoverflow.com/questions/12575068/how-to-get-the-result-of-onpostexecute-to-main-activity-because-asynctask-is-a
-        delegate.processFinish(response);
+        delegate.processFinish((MainActivity) objects.get(0), (String) objects.get(1));
     }
 }
 

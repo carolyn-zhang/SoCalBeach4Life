@@ -5,6 +5,7 @@ import android.os.Bundle;
 import com.example.socalbeach4life.fragments.BeachesFragment;
 import com.example.socalbeach4life.fragments.MapsFragment;
 import com.example.socalbeach4life.fragments.ProfileFragment;
+import com.example.socalbeach4life.fragments.RestaurantsFragment;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -23,17 +24,22 @@ public class MainActivity extends AppCompatActivity implements TaskLoadedCallbac
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     public MapsFragment mapsFragment = new MapsFragment();
+    public RestaurantsFragment restaurantsFragment = new RestaurantsFragment();
     public BeachesFragment beachesFragment = new BeachesFragment();
+    public String currentBeachID = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Bundle extras = getIntent().getExtras();
+//        restaurantsFragment = new RestaurantsFragment();
+//        beachesFragment = new BeachesFragment();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         replaceTopView(mapsFragment);
 
+        replaceBottomView(restaurantsFragment);
         replaceBottomView(beachesFragment);
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -52,17 +58,18 @@ public class MainActivity extends AppCompatActivity implements TaskLoadedCallbac
 
     }
 
-    private void replaceTopView(Fragment fragment) {
+    public void replaceTopView(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.top_view, fragment);
         fragmentTransaction.commit();
     }
 
-    private void replaceBottomView(Fragment fragment) {
+    public void replaceBottomView(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.bottom_view, fragment);
+        // fragmentTransaction.add(R.id.bottom_view, restaurantsFragment);
         fragmentTransaction.commit();
     }
 

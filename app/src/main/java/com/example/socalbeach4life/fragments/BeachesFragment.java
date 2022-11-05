@@ -22,6 +22,7 @@ import com.example.socalbeach4life.R;
 import com.example.socalbeach4life.data.model.Beach;
 import com.example.socalbeach4life.yelp.YelpAsyncResponse;
 import com.example.socalbeach4life.yelp.YelpService;
+import com.google.android.gms.maps.model.Marker;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -33,9 +34,9 @@ import java.util.Map;
 public class BeachesFragment extends Fragment implements YelpAsyncResponse {
 
     private YelpService yelpService = new YelpService();
-    private LinearLayout beachListlayout;
-    private LinearLayout beachInfolayout;
-    private ScrollView beachesScrollView;
+    public LinearLayout beachListlayout;
+    public LinearLayout beachInfolayout;
+    public ScrollView beachesScrollView;
     private MainActivity main;
     private Map<Integer, String> days = new HashMap<>();
     // beachMap maps the beaches name to its corresponding beach object
@@ -59,6 +60,7 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
         super.onCreate(savedInstanceState);
 
         main = (MainActivity) getActivity();
+        //view.setBackgroundColor();
         beachesScrollView = (ScrollView) view.findViewById(R.id.beachesScrollView);
 
         beachListlayout = new LinearLayout(beachesScrollView.getContext());
@@ -66,11 +68,14 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
         // Specify this class as delegate for async yelp call so
         // api call results will be returned to the processFinish() override
         // https://www.yelp.com/developers/documentation/v3/business_search
-        yelpService.executeTask(this, "businesses/search", "term", "beach", "location", "Los Angeles", "sort_by", "distance");
+        yelpService.executeTask(main, this, "businesses/search", "term", "beach", "location", "Los Angeles", "sort_by", "distance");
+
     }
 
     @Override
-    public void processFinish(String output) {
+    public void processFinish(MainActivity main, String output) {
+        this.main = main;
+        beachesScrollView.removeAllViews();
         String endpoint = output.substring(0, output.indexOf('|'));
         output = output.substring(output.indexOf('|') + 1);
         JsonObject convertedObject = new Gson().fromJson(output, JsonObject.class);
@@ -79,6 +84,7 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             JsonArray beaches = (JsonArray) convertedObject.get("businesses");
 
             beachListlayout.setOrientation(LinearLayout.VERTICAL);
+            beachListlayout.setBackgroundColor(Color.parseColor("white"));
             for (JsonElement beach : beaches) {
                 JsonObject beachObj = beach.getAsJsonObject();
                 LinearLayout line = new LinearLayout(beachListlayout.getContext());
@@ -114,7 +120,7 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
 
                 // TODO: set on click listener to display selected beach on map based on ID
                 // TODO: https://www.yelp.com/developers/documentation/v3/business
-                line.setOnClickListener(v -> yelpService.executeTask(this, "businesses/" + beachObj.get("id").getAsString()));
+                line.setOnClickListener(v -> yelpService.executeTask(main,this, "businesses/" + beachObj.get("id").getAsString()));
                 beachListlayout.addView(line, layoutParams);
 
                 Double latitude = beachObj.get("coordinates").getAsJsonObject().get("latitude").getAsDouble();
@@ -123,14 +129,23 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             }
             beachesScrollView.addView(beachListlayout);
         } else if(endpoint.contains("businesses/")) {
-            String beachID = endpoint.substring(endpoint.indexOf('/') + 1);
+            for (int i = main.mapsFragment.markerArray.size() - 1; i > -1; i--) {
+                Marker m = main.mapsFragment.markerArray.get(i);
+                String mTag = (String) m.getTag();
+                if(mTag.contains("Parking") || mTag.contains("Restaurant")) {
+                    m.remove();
+                    main.mapsFragment.markerArray.remove(i);
+                }
+            }
+
+            main.currentBeachID = endpoint.substring(endpoint.indexOf('/') + 1);
             Double latitude = convertedObject.get("coordinates").getAsJsonObject().get("latitude").getAsDouble();
             Double longitude = convertedObject.get("coordinates").getAsJsonObject().get("longitude").getAsDouble();
 
             // TODO: display information about beach
             beachInfolayout = new LinearLayout(beachesScrollView.getContext());
             beachInfolayout.setOrientation(LinearLayout.VERTICAL);
-            beachListlayout.setBackgroundColor(Color.parseColor("white"));
+            beachInfolayout.setBackgroundColor(Color.parseColor("white"));
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             layoutParams.setMargins(10, 10, 10, 10);
@@ -144,6 +159,14 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                     beachesScrollView.addView(beachListlayout);
                 }
             }));
+            beachInfolayout.addView(returnButton, layoutParams);
+
+            // name text
+            String name = convertedObject.get("name").getAsString();
+            TextView nameTV = new TextView(beachesScrollView.getContext());
+            nameTV.setText(name);
+            beachInfolayout.addView(nameTV);
+
             // location text
             JsonObject locationObj = convertedObject.get("location").getAsJsonObject();
             String address = locationObj.get("display_address").getAsJsonArray().get(0).getAsString() + "\n";
@@ -205,10 +228,13 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                     dayTV.setText(dayString);
                     beachInfolayout.addView(dayTV, layoutParams);
                 }
+            } else {
+                TextView noHoursTV = new TextView(beachesScrollView.getContext());
+                String noHours = "Hours unavailable";
+                noHoursTV.setText(noHours);
+                beachInfolayout.addView(noHoursTV, layoutParams);
             }
 
-
-            beachInfolayout.addView(returnButton, layoutParams);
             beachesScrollView.addView(beachInfolayout);
 
             // Display random Parking lot markers
@@ -218,10 +244,12 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             // TODO: initiate search for nearby restaurants
             // Call restaurants fragment
             // when restaurants are clicked replaceBottomView()
-            // yelpService.executeTask(main.restaurantsFragment,
-            // "businesses/search" + beachID,
-            // "term", "beach", "location", "Los Angeles",
-            // "radius", "123", "sort_by", "distance");
+            // main.replaceBottomView(main.restaurantsFragment);
+            yelpService.executeTask(main, main.restaurantsFragment,
+                    "businesses/search",
+                    "term", "restaurants", "latitude", String.valueOf(latitude),
+                    "longitude", String.valueOf(longitude),
+                    "radius", "1000", "limit", "5", "sort_by", "best_match");
 
 
             // move google maps camera location to selected beach
