@@ -67,7 +67,8 @@ public class MainActivity extends AppCompatActivity implements TaskLoadedCallbac
     }
 
     @Override
-    public void onTaskDone(Object... values) {
+    public void onTaskDone(String duration, Object... values) {
+        mapsFragment.etaButton.setText(duration);
         if (mapsFragment.currentPolyline != null)
             mapsFragment.currentPolyline.remove();
         mapsFragment.currentPolyline = mapsFragment.googleMap.addPolyline((PolylineOptions) values[0]);

@@ -11,6 +11,31 @@ import java.util.HashMap;
 import java.util.List;
 
 public class DataParser {
+    public String parseDuration(JSONObject jObject) {
+        String duration = "";
+        JSONArray jRoutes;
+        JSONArray jLegs;
+
+        try {
+            jRoutes = jObject.getJSONArray("routes");
+            /** Traversing all routes */
+            for (int i = 0; i < jRoutes.length(); i++) {
+                jLegs = ((JSONObject) jRoutes.get(i)).getJSONArray("legs");
+                List path = new ArrayList<>();
+                /** Traversing all legs */
+                for (int j = 0; j < jLegs.length(); j++) {
+                    System.out.println("DURATION");
+                    JSONObject duration_obj = ((JSONObject) jLegs.get(j)).getJSONObject("duration");
+                    duration = String.valueOf(duration_obj.get("text"));
+                }
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+        }
+        return duration;
+    }
     public List<List<HashMap<String, String>>> parse(JSONObject jObject) {
 
         List<List<HashMap<String, String>>> routes = new ArrayList<>();
@@ -26,6 +51,9 @@ public class DataParser {
                 /** Traversing all legs */
                 for (int j = 0; j < jLegs.length(); j++) {
                     jSteps = ((JSONObject) jLegs.get(j)).getJSONArray("steps");
+//                    System.out.println("DURATION");
+//                    JSONObject duration = ((JSONObject) jLegs.get(j)).getJSONObject("duration");
+//                    System.out.println(duration.get("text"));
 
                     /** Traversing all steps */
                     for (int k = 0; k < jSteps.length(); k++) {

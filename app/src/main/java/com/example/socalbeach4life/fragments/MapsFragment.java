@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.example.socalbeach4life.MainActivity;
 import com.example.socalbeach4life.maps.FetchURL;
@@ -36,6 +37,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     private MainActivity main;
     private ArrayList<Marker> markerArray = new ArrayList<Marker>();
     public Polyline currentPolyline;
+    public Marker currentMarker;
+    public Button etaButton;
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -86,6 +89,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     public boolean onMarkerClick(final Marker marker) {
         String tag = (String) marker.getTag();
         LatLng pos = marker.getPosition();
+        currentMarker = marker;
 
         double latitude = pos.latitude;
         double longitude = pos.longitude;
@@ -112,6 +116,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             // pos is the location of the beach marker clicked
             LatLng uscLoc = new LatLng(34.0224, -118.2851);
             String url = getRouteURL(pos, uscLoc, "driving");
+            System.out.println(url);
             new FetchURL(this.getContext()).execute(url, "driving");
         } else if (tag.contains("Parking")) {
             // TODO: route to parking lot
@@ -130,8 +135,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
         // Mode
         String mode = "mode=" + directionMode;
+        // Departure time
+        String str_departure = "departure_time=now";
         // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + mode;
+        String parameters = str_origin + "&" + str_dest + "&" + mode + "&" + str_departure;
         // Output format
         String output = "json";
         // Building the URL to the web service
@@ -153,7 +160,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_maps, container, false);
+
+        View view =  inflater.inflate(R.layout.fragment_maps, container, false);
+        etaButton = view.findViewById(R.id.eta_button);
+        return view;
     }
 
     @Override

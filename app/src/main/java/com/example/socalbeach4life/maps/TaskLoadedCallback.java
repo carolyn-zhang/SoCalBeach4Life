@@ -1,5 +1,5 @@
 package com.example.socalbeach4life.maps;
 
 public interface TaskLoadedCallback {
-    void onTaskDone(Object... values);
+    void onTaskDone(String duration, Object... values);
 }
