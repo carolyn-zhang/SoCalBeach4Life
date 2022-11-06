@@ -92,29 +92,17 @@ public class TripsFragment extends Fragment {
                             layoutParams.setMargins(10, 10, 10, 10);
 
                             // get trip info
-                            final String getLocation = tripSnapshot.getKey();
+                            final String getLocation = tripSnapshot.child("location").getValue(String.class);
                             final String getStartTime = tripSnapshot.child("start_time").getValue(String.class);
                             final String getArrivalTime = tripSnapshot.child("arrival_time").getValue(String.class);
 
                             // create text views for each parameter
                             TextView location = new TextView(layout.getContext());
                             location.setPadding(10, 10, 10, 10);
-                            location.setText(getLocation);
+                            location.setText(getLocation + " start time:" + getStartTime + " arrival time:" + getArrivalTime);
                             location.setTextSize(20);
 
-                            TextView startTime = new TextView(layout.getContext());
-                            startTime.setPadding(10, 10, 10, 10);
-                            startTime.setText(getStartTime);
-                            startTime.setTextSize(20);
-
-                            TextView arrivalTime = new TextView(layout.getContext());
-                            arrivalTime.setPadding(10, 10, 10, 10);
-                            arrivalTime.setText(getArrivalTime);
-                            arrivalTime.setTextSize(20);
-
                             line.addView(location);
-                            line.addView(startTime);
-                            line.addView(arrivalTime);
 
                             layout.addView(line, layoutParams);
 
