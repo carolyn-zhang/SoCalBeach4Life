@@ -50,7 +50,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     private Boolean mapReady = false;
     private MainActivity main;
     public Polyline currentPolyline;
-    private Marker currentMarker;
+    private Marker currentBeachMarker;
     public Button etaButton;
     public Button tripButton;
     private SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z");
@@ -100,8 +100,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        currentMarker = marker;
+
         String tag = (String) marker.getTag();
+        if(tag.contains("Beach")) {
+            currentBeachMarker = marker;
+        }
         LatLng pos = marker.getPosition();
 
         double latitude = pos.latitude;
@@ -129,12 +132,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             String beachID = tag.substring(tag.indexOf(' ') + 1);
             YelpService yelpService = new YelpService();
 
-            // test: show route to beach, TODO: move this, change to for parking lot
-            // pos is the location of the beach marker clicked
-            tripButton.setVisibility(View.VISIBLE);
-            LatLng uscLoc = new LatLng(34.0224, -118.2851);
-            String url = getRouteURL(pos, uscLoc, "driving");
-            new FetchURL(this.getContext()).execute(url, "driving");
+//            // test: show route to beach, TODO: move this, change to for parking lot
+//            // pos is the location of the beach marker clicked
+//            tripButton.setVisibility(View.VISIBLE);
+//            LatLng uscLoc = new LatLng(34.0224, -118.2851);
+//            String url = getRouteURL(pos, uscLoc, "driving");
+//            new FetchURL(this.getContext()).execute(url, "driving");
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 public void run() {
@@ -148,6 +151,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         } else if (tag.contains("Parking")) {
             // TODO: route to parking lot
             ;
+            // test: show route to beach, TODO: move this, change to for parking lot
+            // pos is the location of the beach marker clicked
+            etaButton.setVisibility(View.VISIBLE);
+            tripButton.setVisibility(View.VISIBLE);
+            LatLng uscLoc = new LatLng(34.0224, -118.2851);
+            String url = getRouteURL(pos, uscLoc, "driving");
+            new FetchURL(this.getContext()).execute(url, "driving");
+
         } else if (tag.contains("Restaurant")) {
             // show restaurant information in bottom fragment
             main = (MainActivity) getActivity();
@@ -207,6 +218,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
+        etaButton.setVisibility(View.GONE);
         tripButton.setVisibility(View.GONE);
         tripButton.setText("Start Trip");
         tripButton.setOnClickListener(new View.OnClickListener() {
@@ -219,13 +231,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         numTrips[0] = (int) snapshot.getChildrenCount();
-                        if(start) {
+                        String tag = (String) currentBeachMarker.getTag();
+                        if(start && tag.contains("Beach")) {
                             // get start time and store to database
                             String currentDateAndTime = sdf.format(new Date());
 
                             // store location
                             databaseReference.child("users").child(getActivity().getIntent().getExtras().getString("userid"))
-                                    .child("trips").child(numTrips[0] + 1 + "").child("location").setValue(currentMarker.getTitle());
+                                    .child("trips").child(numTrips[0] + 1 + "").child("location").setValue(currentBeachMarker.getTitle());
 
 
                             databaseReference.child("users").child(getActivity().getIntent().getExtras().getString("userid"))
@@ -234,7 +247,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
                             tripButton.setText("End Trip");
 
-                        } else {
+                        } else if (tag.contains("Beach")) {
                             // get end time and store to last entry in database
                             String currentDateAndTime = sdf.format(new Date());
 
