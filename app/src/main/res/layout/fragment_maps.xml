@@ -17,5 +17,15 @@
         android:layout_marginTop="20dp"
         android:paddingRight="10dp"/>
 
+    <Button
+        android:id="@+id/start_end_trip_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right|top"
+        android:text="Start Trip"
+        android:padding="10dp"
+        android:layout_marginTop="65dp"
+        android:paddingRight="10dp"/>
+
 </fragment>
 
