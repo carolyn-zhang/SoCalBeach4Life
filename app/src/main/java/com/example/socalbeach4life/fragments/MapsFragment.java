@@ -105,6 +105,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         if(tag.contains("Beach")) {
             currentBeachMarker = marker;
         }
+        if(currentPolyline != null)
+            currentPolyline.remove();
         LatLng pos = marker.getPosition();
 
         double latitude = pos.latitude;
