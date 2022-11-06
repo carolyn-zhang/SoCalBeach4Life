@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -106,9 +107,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         double latitude = pos.latitude;
         double longitude = pos.longitude;
         if (tag.contains("Beach")) {
-            if(main.restaurantsFragment != null)
-                main.restaurantsFragment.firstLoad = false;
-            main.replaceBottomView(main.beachesFragment);
+            if(main != null) {
+                if(main.restaurantsFragment != null)
+                    main.restaurantsFragment.firstLoad = false;
+                main.replaceBottomView(main.beachesFragment);
+            }
             setLocation(latitude, longitude);
 
             // remove other parking lot and restaurant markers
@@ -132,7 +135,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             LatLng uscLoc = new LatLng(34.0224, -118.2851);
             String url = getRouteURL(pos, uscLoc, "driving");
             new FetchURL(this.getContext()).execute(url, "driving");
-            yelpService.executeTask(main, main.beachesFragment, "businesses/" + beachID);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    yelpService.executeTask(main, main.beachesFragment, "businesses/" + beachID);
+                }
+            }, 500);
 //            yelpService.executeTask(main.restaurantsFragment,
 //                    "businesses/search",
 //                    "term", "restaurants", "location", "Los Angeles",

@@ -170,16 +170,17 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             // location text
             JsonObject locationObj = convertedObject.get("location").getAsJsonObject();
             String address = locationObj.get("display_address").getAsJsonArray().get(0).getAsString() + "\n";
-            String city = locationObj.get("city").getAsString() + "\n";
+            String city = locationObj.get("city").getAsString() + ", CA\n";
+            address = address + ", " + city + ", CA";
             TextView addressTV = new TextView(beachesScrollView.getContext());
-            TextView cityTV = new TextView(beachesScrollView.getContext());
             addressTV.setText(address);
-            cityTV.setText(city);
-            beachInfolayout.addView(addressTV, layoutParams);
-            beachInfolayout.addView(cityTV, layoutParams);
-
+            beachInfolayout.addView(addressTV);
 //            System.out.println(convertedObject);
             // hours text
+            TextView hoursTV = new TextView(beachesScrollView.getContext());
+            String hours = "Hours of Operation: ";
+            hoursTV.setText(hours);
+            beachInfolayout.addView(hoursTV, layoutParams);
             if(convertedObject.get("hours") != null) {
                 JsonArray hoursArray = convertedObject.get("hours").getAsJsonArray();
                 JsonArray openHoursArray = hoursArray.get(0).getAsJsonObject().get("open").getAsJsonArray();
@@ -224,15 +225,15 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                     }
                     Integer day = dayHours.get("day").getAsInt();
                     TextView dayTV = new TextView(beachesScrollView.getContext());
-                    String dayString = days.get(day) + "   " + start + " - " + end + "\n";
+                    String dayString = days.get(day) + ":   " + start + " - " + end + "\n";
                     dayTV.setText(dayString);
-                    beachInfolayout.addView(dayTV, layoutParams);
+                    beachInfolayout.addView(dayTV);
                 }
             } else {
                 TextView noHoursTV = new TextView(beachesScrollView.getContext());
                 String noHours = "Hours unavailable";
                 noHoursTV.setText(noHours);
-                beachInfolayout.addView(noHoursTV, layoutParams);
+                beachInfolayout.addView(noHoursTV);
             }
 
             beachesScrollView.addView(beachInfolayout);
