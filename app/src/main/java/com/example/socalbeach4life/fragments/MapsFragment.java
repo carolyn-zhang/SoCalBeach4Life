@@ -2,6 +2,7 @@ package com.example.socalbeach4life.fragments;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.content.Intent;
@@ -11,16 +12,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
+
+import android.os.Looper;
+import android.location.LocationManager;
+import android.provider.Settings;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.example.socalbeach4life.Login;
 import com.example.socalbeach4life.MainActivity;
 import com.example.socalbeach4life.maps.FetchURL;
-import com.example.socalbeach4life.maps.TaskLoadedCallback;
 import com.example.socalbeach4life.yelp.YelpService;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -29,15 +38,18 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.example.socalbeach4life.R;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
 
 import java.util.ArrayList;
 
@@ -55,13 +67,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     public Button tripButton;
     private SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z");
     public ArrayList<Marker> markerArray = new ArrayList<Marker>();
+    FusedLocationProviderClient client;
+    // Initialize to LA coordinates
+    private double latitude = 100;
+    private double longitude = 100;
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
         mapReady = true;
-        // TODO: Set to user's current location
-        LatLng LA = new LatLng(34.0522, -118.2437);
+        LatLng LA = new LatLng(latitude, longitude);
         googleMap.setMinZoomPreference(10);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
         googleMap.setOnMarkerClickListener(this);
@@ -69,8 +84,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
 
     public void resetCamera() {
-        // TODO: Also set back to user's current location.
-        LatLng LA = new LatLng(34.0522, -118.2437);
+        LatLng LA = new LatLng(latitude, longitude);
         googleMap.setMinZoomPreference(10);
         googleMap.setMaxZoomPreference(10);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
@@ -209,11 +223,35 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-
+        // Initialize view
         View view =  inflater.inflate(R.layout.fragment_maps, container, false);
         etaButton = view.findViewById(R.id.eta_button);
         tripButton = view.findViewById(R.id.start_end_trip_button);
 
+        // Initialize location client
+        client = LocationServices
+                .getFusedLocationProviderClient(
+                        getActivity());
+        // check condition
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            // When permission is granted
+            // Call method
+            getCurrentLocation();
+
+        } else {
+            // When permission is not granted
+            // Call method
+            requestPermissions(
+                    new String[] {
+                            Manifest.permission
+                                    .ACCESS_FINE_LOCATION,
+                            Manifest.permission
+                                    .ACCESS_COARSE_LOCATION },
+                    100);
+        }
         return view;
     }
 
@@ -277,5 +315,102 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
     }
 
-}
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // Check condition
+        if (requestCode == 100 && (grantResults.length > 0) && (grantResults[0] + grantResults[1]
+                == PackageManager.PERMISSION_GRANTED)) {
+            // When permission are granted
+            // Call  method
+            getCurrentLocation();
+        }
+        else {
+            // When permission are denied
+            // Display toast
+            Toast.makeText(getActivity(), "Permission denied", Toast.LENGTH_SHORT).show();
+        }
+    }
 
+    @SuppressLint("MissingPermission")
+    private void getCurrentLocation()
+    {
+        // Initialize Location manager
+        LocationManager locationManager
+                = (LocationManager)getActivity()
+                .getSystemService(
+                        Context.LOCATION_SERVICE);
+        // Check condition
+        if (locationManager.isProviderEnabled(
+                LocationManager.GPS_PROVIDER)
+                || locationManager.isProviderEnabled(
+                LocationManager.NETWORK_PROVIDER)) {
+            // When location service is enabled
+            // Get last location
+            client.getLastLocation().addOnCompleteListener(
+                    task -> {
+
+                        // Initialize location
+                        Location location
+                                = task.getResult();
+                        // Check condition
+                        if (location != null) {
+                            // When location result is not null set latitude
+                            latitude = location.getLatitude();
+                            // set longitude
+                            longitude = location.getLongitude();
+                            resetCamera();
+                        }
+                        else {
+                            // When location result is null
+                            // initialize location request
+                            LocationRequest locationRequest = new LocationRequest()
+                                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                                    .setInterval(10000)
+                                    .setFastestInterval(
+                                            1000)
+                                    .setNumUpdates(1);
+
+                            // Initialize location call back
+                            LocationCallback
+                                    locationCallback
+                                    = new LocationCallback() {
+                                @Override
+                                public void
+                                onLocationResult(
+                                        LocationResult
+                                                locationResult)
+                                {
+                                    // Initialize
+                                    // location
+                                    Location location1
+                                            = locationResult
+                                            .getLastLocation();
+                                    // Set latitude
+                                    latitude = location1.getLatitude();
+                                    // set longitude
+                                    longitude = location1.getLongitude();
+                                    resetCamera();
+                                }
+                            };
+
+                            // Request location updates
+                            client.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+                        }
+                    });
+        }
+        else {
+            // When location service is not enabled open location setting
+            startActivity(
+                    new Intent(
+                            Settings
+                                    .ACTION_LOCATION_SOURCE_SETTINGS)
+                            .setFlags(
+                                    Intent.FLAG_ACTIVITY_NEW_TASK));
+        }
+    }
+
+}
