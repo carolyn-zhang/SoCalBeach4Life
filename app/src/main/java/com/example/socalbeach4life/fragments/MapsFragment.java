@@ -197,7 +197,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     public void setLocation(double latitude, double longitude) {
         if(mapReady) {
             LatLng newLocation = new LatLng(latitude, longitude);
-            googleMap.setMinZoomPreference(15);
+            googleMap.setMinZoomPreference(14);
             googleMap.moveCamera(CameraUpdateFactory.newLatLng(newLocation));
         }
     }

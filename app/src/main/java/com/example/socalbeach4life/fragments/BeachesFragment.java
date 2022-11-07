@@ -26,6 +26,8 @@ import com.example.socalbeach4life.R;
 import com.example.socalbeach4life.data.model.Beach;
 import com.example.socalbeach4life.yelp.YelpAsyncResponse;
 import com.example.socalbeach4life.yelp.YelpService;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
@@ -153,9 +155,9 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                 }
             }
 
-            main.currentBeachID = endpoint.substring(endpoint.indexOf('/') + 1);
             Double latitude = convertedObject.get("coordinates").getAsJsonObject().get("latitude").getAsDouble();
             Double longitude = convertedObject.get("coordinates").getAsJsonObject().get("longitude").getAsDouble();
+            main.currentBeach = new Beach(endpoint.substring(endpoint.indexOf('/') + 1), new LatLng(latitude, longitude));
 
             // TODO: display information about beach
             beachInfolayout = new LinearLayout(beachesScrollView.getContext());
@@ -176,6 +178,37 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             }));
             beachInfolayout.addView(returnButton, layoutParams);
 
+            // restaurant radius button
+            String resRadius = "Edit Restaurant Radius (meters)";
+            TextView resRadiusTV = new TextView(beachesScrollView.getContext());
+            resRadiusTV.setText(resRadius);
+            beachInfolayout.addView(resRadiusTV);
+            LinearLayout radiusLayout = new LinearLayout(beachesScrollView.getContext());
+            radiusLayout.setOrientation(LinearLayout.HORIZONTAL);
+            LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            buttonParams.setMargins(10, 10, 10, 10);
+            for(int i = 1; i <= 3; i++) {
+                Button radiusButton = new Button(beachesScrollView.getContext());
+                String val = String.valueOf(i * 1000);
+                radiusButton.setText(val);
+                radiusButton.setBackgroundColor(Color.parseColor("grey"));
+                radiusButton.setOnClickListener((new View.OnClickListener() {
+                    public void onClick(View v) {
+                        Button b = (Button)v;
+                        String newRadius = b.getText().toString();
+                        main.restaurantsFragment.radius = Integer.valueOf(newRadius);
+                        yelpService.executeTask(main, main.restaurantsFragment,
+                                "businesses/search",
+                                "term", "best restaurants", "latitude", String.valueOf(latitude),
+                                "longitude", String.valueOf(longitude),
+                                "radius", newRadius, "limit", "10", "sort_by", "best_match");
+                    }
+                }));
+                radiusLayout.addView(radiusButton, buttonParams);
+            }
+            beachInfolayout.addView(radiusLayout, layoutParams);
+
             // name text
             String name = convertedObject.get("name").getAsString();
             TextView nameTV = new TextView(beachesScrollView.getContext());
@@ -185,11 +218,11 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             // location text
             JsonObject locationObj = convertedObject.get("location").getAsJsonObject();
             String address = locationObj.get("display_address").getAsJsonArray().get(0).getAsString() + "\n";
-            String city = locationObj.get("city").getAsString() + ", CA\n";
-            address = address + ", " + city + ", CA";
+            String city = locationObj.get("city").getAsString() + ", CA";
+            address = address + ", " + city;
             TextView addressTV = new TextView(beachesScrollView.getContext());
             addressTV.setText(address);
-            beachInfolayout.addView(addressTV);
+            beachInfolayout.addView(addressTV, layoutParams);
 //            System.out.println(convertedObject);
             // hours text
             TextView hoursTV = new TextView(beachesScrollView.getContext());
@@ -263,9 +296,9 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             // main.replaceBottomView(main.restaurantsFragment);
             yelpService.executeTask(main, main.restaurantsFragment,
                     "businesses/search",
-                    "term", "restaurants", "latitude", String.valueOf(latitude),
+                    "term", "best restaurants", "latitude", String.valueOf(latitude),
                     "longitude", String.valueOf(longitude),
-                    "radius", "1000", "limit", "5", "sort_by", "best_match");
+                    "radius", String.valueOf(main.restaurantsFragment.radius), "limit", "10", "sort_by", "best_match");
 
             TextView reviewSection = new TextView(beachesScrollView.getContext());
             reviewSection.setText("Reviews");
@@ -345,7 +378,6 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             main.mapsFragment.currentBeachMarker = main.mapsFragment.googleMap.addMarker(new MarkerOptions()
                     .position(new LatLng(latitude, longitude))
                     .title(name));
-            Log.d("a", "a");
         }
     }
 }

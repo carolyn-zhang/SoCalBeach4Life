@@ -2,6 +2,7 @@ package com.example.socalbeach4life;
 
 import android.os.Bundle;
 
+import com.example.socalbeach4life.data.model.Beach;
 import com.example.socalbeach4life.fragments.BeachesFragment;
 import com.example.socalbeach4life.fragments.MapsFragment;
 import com.example.socalbeach4life.fragments.ProfileFragment;
@@ -17,6 +18,9 @@ import androidx.navigation.ui.AppBarConfiguration;
 import com.example.socalbeach4life.databinding.ActivityMainBinding;
 import com.example.socalbeach4life.fragments.TripsFragment;
 import com.example.socalbeach4life.maps.TaskLoadedCallback;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 public class MainActivity extends AppCompatActivity implements TaskLoadedCallback {
@@ -26,7 +30,8 @@ public class MainActivity extends AppCompatActivity implements TaskLoadedCallbac
     public MapsFragment mapsFragment = new MapsFragment();
     public RestaurantsFragment restaurantsFragment = new RestaurantsFragment();
     public BeachesFragment beachesFragment = new BeachesFragment();
-    public String currentBeachID = "";
+    public Beach currentBeach;
+    public Circle currentCircle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

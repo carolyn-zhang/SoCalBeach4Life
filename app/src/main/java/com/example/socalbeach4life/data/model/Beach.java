@@ -1,14 +1,14 @@
 package com.example.socalbeach4life.data.model;
 
-public class Beach {
-    public Double latitude;
-    public Double longitude;
-    public String id;
+import com.google.android.gms.maps.model.LatLng;
 
-    public Beach(String id, Double latitude, Double longitude) {
+public class Beach {
+    public String id;
+    public LatLng coordinates;
+
+    public Beach(String id, LatLng coordinates) {
         this.id = id;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.coordinates = coordinates;
     }
 
 }
