@@ -359,9 +359,8 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                     for (DataSnapshot nameSnapshot: snapshot.getChildren()) {
                         globalNumReviews = 0;
                         TextView numReviewsTV = new TextView(beachesScrollView.getContext());
-                        numReviewsTV.setText("Number of reviews: " + globalNumReviews);
                         globalNumReviewsTV = numReviewsTV;
-                        beachInfolayout.addView(numReviewsTV);
+                        beachInfolayout.addView(globalNumReviewsTV);
                         if(nameSnapshot.getKey().equals(name)) {
                             // display number of reviews
                             globalNumReviews = (int) nameSnapshot.getChildrenCount();

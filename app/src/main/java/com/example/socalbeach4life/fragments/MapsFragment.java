@@ -169,6 +169,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
             // walking route to restaurant from beach
             etaButton.setVisibility(View.VISIBLE);
+            tripButton.setVisibility(View.GONE);
             String url = getRouteURL(pos, currentBeachMarker.getPosition(), "walking");
             new FetchURL(this.getContext()).execute(url, "walking");
         }
