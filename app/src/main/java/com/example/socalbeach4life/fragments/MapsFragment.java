@@ -68,25 +68,29 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     private SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z");
     public ArrayList<Marker> markerArray = new ArrayList<Marker>();
     FusedLocationProviderClient client;
-    // Initialize to LA coordinates
-    private double latitude = 34.0522;
-    private double longitude = -118.2437;
+    // Initialize current location to LA coordinates
+    private double currLocLatitude = 34.0522;
+    private double currLocLongitude = -118.2437;
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
         mapReady = true;
-        LatLng LA = new LatLng(latitude, longitude);
+        LatLng LA = new LatLng(currLocLatitude, currLocLongitude);
         googleMap.setMinZoomPreference(10);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
         googleMap.setOnMarkerClickListener(this);
 
-        googleMap.setMyLocationEnabled(true);
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            googleMap.setMyLocationEnabled(true);
+        }
     }
 
 
     public void resetCamera() {
-        LatLng LA = new LatLng(latitude, longitude);
+        LatLng LA = new LatLng(currLocLatitude, currLocLongitude);
         googleMap.setMinZoomPreference(10);
         googleMap.setMaxZoomPreference(10);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
@@ -169,8 +173,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             // driving route to parking lot
             etaButton.setVisibility(View.VISIBLE);
             tripButton.setVisibility(View.VISIBLE);
-            LatLng uscLoc = new LatLng(34.0224, -118.2851);
-            String url = getRouteURL(pos, uscLoc, "driving");
+            LatLng currLoc = new LatLng(currLocLatitude, currLocLongitude);
+            String url = getRouteURL(pos, currLoc, "driving");
             new FetchURL(this.getContext()).execute(url, "driving");
 
         } else if (tag.contains("Restaurant")) {
@@ -358,9 +362,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                         // Check condition
                         if (location != null) {
                             // When location result is not null set latitude
-                            latitude = location.getLatitude();
+                            currLocLatitude = location.getLatitude();
                             // set longitude
-                            longitude = location.getLongitude();
+                            currLocLongitude = location.getLongitude();
                             resetCamera();
                         }
                         else {
@@ -389,9 +393,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                                             = locationResult
                                             .getLastLocation();
                                     // Set latitude
-                                    latitude = location1.getLatitude();
+                                    currLocLatitude = location1.getLatitude();
                                     // set longitude
-                                    longitude = location1.getLongitude();
+                                    currLocLongitude = location1.getLongitude();
                                     resetCamera();
                                 }
                             };
