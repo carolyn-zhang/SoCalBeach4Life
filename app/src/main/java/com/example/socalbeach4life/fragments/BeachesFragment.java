@@ -24,6 +24,11 @@ import com.example.socalbeach4life.yelp.YelpAsyncResponse;
 import com.example.socalbeach4life.yelp.YelpService;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -34,6 +39,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BeachesFragment extends Fragment implements YelpAsyncResponse {
+    // create DatabaseReference object to access realtime database
+    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReferenceFromUrl("https://socalbeach4life-2bd0d-default-rtdb.firebaseio.com/");
 
     private YelpService yelpService = new YelpService();
     public LinearLayout beachListlayout;
@@ -253,6 +260,41 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                     "term", "restaurants", "latitude", String.valueOf(latitude),
                     "longitude", String.valueOf(longitude),
                     "radius", "1000", "limit", "5", "sort_by", "best_match");
+
+            TextView reviewSection = new TextView(beachesScrollView.getContext());
+            reviewSection.setText("Reviews");
+            beachInfolayout.addView(reviewSection);
+
+            final int[] numReviews = {0};
+            databaseReference.child("reviews").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot nameSnapshot: snapshot.getChildren()) {
+                        if(nameSnapshot.getKey().equals(name)) {
+                            numReviews[0] = (int) nameSnapshot.getChildrenCount();
+                            for (DataSnapshot idSnapshot: nameSnapshot.getChildren()) {
+                                int stars = idSnapshot.child("stars").getValue(Integer.class);
+                                String user_name = idSnapshot.child("user_name").getValue(String.class);
+                                TextView review = new TextView(beachesScrollView.getContext());
+                                review.setText("stars:" + stars + " user name:" + user_name);
+                                beachInfolayout.addView(review);
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+
+            if(numReviews[0] == 0) {
+                TextView numReviewsTV = new TextView(beachesScrollView.getContext());
+                numReviewsTV.setText("Number of reviews: " + numReviews[0]);
+                beachInfolayout.addView(numReviewsTV);
+            }
 
 
             // move google maps camera location to selected beach
