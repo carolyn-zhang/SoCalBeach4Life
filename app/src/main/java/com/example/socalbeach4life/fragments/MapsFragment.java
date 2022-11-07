@@ -80,6 +80,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         googleMap.setMinZoomPreference(10);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
         googleMap.setOnMarkerClickListener(this);
+
+        googleMap.setMyLocationEnabled(true);
     }
 
 

@@ -325,40 +325,44 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             // add new review to database and update user interface with added review
             leaveReviewButton.setOnClickListener((new View.OnClickListener() {
                 public void onClick(View v) {
-                    // recalculate average
-                    double prevSum = globalAverageScore * globalNumReviews;
+                    if(starsReview.getText().toString().trim().length() > 0) {
+                        System.out.println(starsReview.getText().toString());
+                        // recalculate average
+                        double prevSum = globalAverageScore * globalNumReviews;
 
-                    double newSum = prevSum + Integer.parseInt(starsReview.getText().toString());
+                        double newSum = prevSum + Integer.parseInt(starsReview.getText().toString());
 
-                    double newScore = newSum / (globalNumReviews + 1);
+                        double newScore = newSum / (globalNumReviews + 1);
 
-                    globalAverageScoreTV.setText("Overall score: " + String.format("%.1f", newScore) + " stars");
+                        globalAverageScoreTV.setText("Overall score: " + String.format("%.1f", newScore) + " stars");
 
-                    globalNumReviews += 1;
-                    String strNextId = String.valueOf(globalNumReviews);
+                        globalNumReviews += 1;
+                        String strNextId = String.valueOf(globalNumReviews);
 
-                    // store review to database
-                    databaseReference.child("reviews").child(name).child(strNextId)
-                            .child("stars").setValue(Integer.parseInt(starsReview.getText().toString()));
-
-                    if(!anonymousReview.isChecked()) { // user wants name to display
+                        // store review to database
                         databaseReference.child("reviews").child(name).child(strNextId)
-                                .child("user_name").setValue(getActivity().getIntent().getExtras().getString("name"));
+                                .child("stars").setValue(Integer.parseInt(starsReview.getText().toString()));
+
+                        if(!anonymousReview.isChecked()) { // user wants name to display
+                            databaseReference.child("reviews").child(name).child(strNextId)
+                                    .child("user_name").setValue(getActivity().getIntent().getExtras().getString("name"));
+                        }
+
+                        // add review to layout because rendering from database not immediate
+                        TextView review = new TextView(beachesScrollView.getContext());
+                        if(!anonymousReview.isChecked()) {
+                            review.setText("stars:" + Integer.parseInt(starsReview.getText().toString()) + " user name:"
+                                    + getActivity().getIntent().getExtras().getString("name"));
+                        } else {
+                            review.setText("stars:" + Integer.parseInt(starsReview.getText().toString()));
+                        }
+
+                        globalNumReviewsTV.setText("Number of reviews: " + globalNumReviews);
+                        beachInfolayout.addView(review);
+
+                        starsReview.getText().clear();
                     }
 
-                    // add review to layout because rendering from database not immediate
-                    TextView review = new TextView(beachesScrollView.getContext());
-                    if(!anonymousReview.isChecked()) {
-                        review.setText("stars:" + Integer.parseInt(starsReview.getText().toString()) + " user name:"
-                                + getActivity().getIntent().getExtras().getString("name"));
-                    } else {
-                        review.setText("stars:" + Integer.parseInt(starsReview.getText().toString()));
-                    }
-
-                    globalNumReviewsTV.setText("Number of reviews: " + globalNumReviews);
-                    beachInfolayout.addView(review);
-
-                    starsReview.getText().clear();
                 }
             }));
 
