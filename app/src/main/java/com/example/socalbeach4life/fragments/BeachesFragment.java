@@ -23,10 +23,12 @@ import com.example.socalbeach4life.data.model.Beach;
 import com.example.socalbeach4life.yelp.YelpAsyncResponse;
 import com.example.socalbeach4life.yelp.YelpService;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -255,6 +257,9 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
 
             // move google maps camera location to selected beach
             main.mapsFragment.setLocation(latitude, longitude);
+            main.mapsFragment.currentBeachMarker = main.mapsFragment.googleMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(latitude, longitude))
+                    .title(name));
             Log.d("a", "a");
         }
     }

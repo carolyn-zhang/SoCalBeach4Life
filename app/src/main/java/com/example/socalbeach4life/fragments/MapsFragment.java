@@ -50,7 +50,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     private Boolean mapReady = false;
     private MainActivity main;
     public Polyline currentPolyline;
-    private Marker currentBeachMarker;
+    public Marker currentBeachMarker;
     public Button etaButton;
     public Button tripButton;
     private SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z");
@@ -103,20 +103,28 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
         String tag = (String) marker.getTag();
         if(tag.contains("Beach")) {
+            // needed to get beach name for storing trips
             currentBeachMarker = marker;
         }
+
+        // remove any displayed route if applicable
         if(currentPolyline != null)
             currentPolyline.remove();
+
         LatLng pos = marker.getPosition();
 
         double latitude = pos.latitude;
         double longitude = pos.longitude;
         if (tag.contains("Beach")) {
+            etaButton.setVisibility(View.GONE);
+            tripButton.setVisibility(View.GONE);
+
             if(main != null) {
                 if(main.restaurantsFragment != null)
                     main.restaurantsFragment.firstLoad = false;
                 main.replaceBottomView(main.beachesFragment);
             }
+
             setLocation(latitude, longitude);
 
             // remove other parking lot and restaurant markers
@@ -134,12 +142,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             String beachID = tag.substring(tag.indexOf(' ') + 1);
             YelpService yelpService = new YelpService();
 
-//            // test: show route to beach, TODO: move this, change to for parking lot
-//            // pos is the location of the beach marker clicked
-//            tripButton.setVisibility(View.VISIBLE);
-//            LatLng uscLoc = new LatLng(34.0224, -118.2851);
-//            String url = getRouteURL(pos, uscLoc, "driving");
-//            new FetchURL(this.getContext()).execute(url, "driving");
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 public void run() {
@@ -151,10 +153,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 //                    "term", "restaurants", "location", "Los Angeles",
 //                    "radius", "1000", "sort_by", "distance");
         } else if (tag.contains("Parking")) {
-            // TODO: route to parking lot
-            ;
-            // test: show route to beach, TODO: move this, change to for parking lot
-            // pos is the location of the beach marker clicked
+            // driving route to parking lot
             etaButton.setVisibility(View.VISIBLE);
             tripButton.setVisibility(View.VISIBLE);
             LatLng uscLoc = new LatLng(34.0224, -118.2851);
@@ -167,6 +166,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             String restaurantID = tag.substring(tag.indexOf(' ') + 1);
             YelpService yelpService = new YelpService();
             yelpService.executeTask(main, main.restaurantsFragment, "businesses/" + restaurantID);
+
+            // walking route to restaurant from beach
+            etaButton.setVisibility(View.VISIBLE);
+            String url = getRouteURL(pos, currentBeachMarker.getPosition(), "walking");
+            new FetchURL(this.getContext()).execute(url, "walking");
         }
         return false;
     }
