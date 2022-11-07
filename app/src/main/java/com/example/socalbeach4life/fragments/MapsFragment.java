@@ -116,10 +116,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     public boolean onMarkerClick(final Marker marker) {
 
         String tag = (String) marker.getTag();
-        if(tag.contains("Beach")) {
-            // needed to get beach name for storing trips
-            currentBeachMarker = marker;
-        }
 
         // remove any displayed route if applicable
         if(currentPolyline != null)
@@ -130,6 +126,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         double latitude = pos.latitude;
         double longitude = pos.longitude;
         if (tag.contains("Beach")) {
+            currentBeachMarker = marker;
             etaButton.setVisibility(View.GONE);
             tripButton.setVisibility(View.GONE);
 
@@ -276,8 +273,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         numTrips[0] = (int) snapshot.getChildrenCount();
-                        String tag = (String) currentBeachMarker.getTag();
-                        if(start && tag.contains("Beach")) {
+
+                        if(start) {
                             // get start time and store to database
                             String currentDateAndTime = sdf.format(new Date());
 
@@ -292,7 +289,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
 
                             tripButton.setText("End Trip");
 
-                        } else if (tag.contains("Beach")) {
+                        } else {
                             // get end time and store to last entry in database
                             String currentDateAndTime = sdf.format(new Date());
 

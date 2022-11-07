@@ -55,8 +55,10 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
     public LinearLayout beachInfolayout;
     public ScrollView beachesScrollView;
     private TextView globalNumReviewsTV;
+    private TextView globalAverageScoreTV;
     private CheckBox anonymousReview;
     private int globalNumReviews = 0;
+    private double globalAverageScore = 0.0;
     private MainActivity main;
     private Map<Integer, String> days = new HashMap<>();
     // beachMap maps the beaches name to its corresponding beach object
@@ -321,9 +323,17 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             beachInfolayout.addView(leaveReviewButton);
 
             // add new review to database and update user interface with added review
-            final int[] numReviews = {0};
             leaveReviewButton.setOnClickListener((new View.OnClickListener() {
                 public void onClick(View v) {
+                    // recalculate average
+                    double prevSum = globalAverageScore * globalNumReviews;
+
+                    double newSum = prevSum + Integer.parseInt(starsReview.getText().toString());
+
+                    double newScore = newSum / (globalNumReviews + 1);
+
+                    globalAverageScoreTV.setText("Overall score: " + String.format("%.1f", newScore) + " stars");
+
                     globalNumReviews += 1;
                     String strNextId = String.valueOf(globalNumReviews);
 
@@ -358,16 +368,22 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     for (DataSnapshot nameSnapshot: snapshot.getChildren()) {
                         globalNumReviews = 0;
+                        globalAverageScore = 0;
                         TextView numReviewsTV = new TextView(beachesScrollView.getContext());
                         globalNumReviewsTV = numReviewsTV;
                         beachInfolayout.addView(globalNumReviewsTV);
+                        TextView reviewsScoreTV = new TextView(beachesScrollView.getContext());
+                        globalAverageScoreTV = reviewsScoreTV;
+                        beachInfolayout.addView(globalAverageScoreTV);
                         if(nameSnapshot.getKey().equals(name)) {
                             // display number of reviews
                             globalNumReviews = (int) nameSnapshot.getChildrenCount();
                             globalNumReviewsTV.setText("Number of reviews: " + globalNumReviews);
+                            double sum = 0;
                             // display reviews
                             for (DataSnapshot idSnapshot: nameSnapshot.getChildren()) {
                                 int stars = idSnapshot.child("stars").getValue(Integer.class);
+                                sum += stars;
                                 if(idSnapshot.child("user_name").exists()) {
                                     String user_name = idSnapshot.child("user_name").getValue(String.class);
                                     TextView review = new TextView(beachesScrollView.getContext());
@@ -379,6 +395,9 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                                     beachInfolayout.addView(review);
                                 }
                             }
+                            // display beach overall score
+                            globalAverageScore = sum/globalNumReviews;
+                            globalAverageScoreTV.setText("Overall score: " + String.format("%.1f", sum/globalNumReviews) + " stars");
                             break;
                         }
                     }
