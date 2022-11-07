@@ -69,8 +69,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     public ArrayList<Marker> markerArray = new ArrayList<Marker>();
     FusedLocationProviderClient client;
     // Initialize to LA coordinates
-    private double latitude = 100;
-    private double longitude = 100;
+    private double latitude = 34.0522;
+    private double longitude = -118.2437;
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
