@@ -24,6 +24,8 @@ import com.example.socalbeach4life.R;
 import com.example.socalbeach4life.data.model.Restaurant;
 import com.example.socalbeach4life.yelp.YelpAsyncResponse;
 import com.example.socalbeach4life.yelp.YelpService;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.Marker;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -40,11 +42,11 @@ public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
     private MainActivity main;
     private ScrollView restaurantsScrollView;
     private Map<Integer, String> days = new HashMap<>();
-    private int radius = 1000;
     private YelpService yelpService = new YelpService();
     private Context context;
     private FrameLayout parentView;
     public Boolean firstLoad = true;
+    public int radius = 1000;
     private String[] menuItems = new String[] {"Barbecue Plate", "Biscuits and Gravy", "Chicken Fried Rice", "Tonkatsu Ramen", "Fish and Chips", "Ranchera Steak Burrito", "Pesto Chicken Sandwich", "Black Cod with Miso", "Portebello Mushroom Burger", "Blackend Redfish", "Chicken Gumbo", "Breaded Pork Tenderloin", "Buffalo Wings", "Lemon Pepper Wings", "Caesar Salad", "Seasoned Fries", "Charbroiled Oysters", "Carbonara Pasta", "Chicago Deep Dish Pizza", "Clam Chowder", "Margherita Pizza", "Double-Double Cheeseburger", "Philly Cheesesteak", "Pork Cutlet Rice", "Chicken and Waffles", "Blue Crab Fried Rice", "Alfredo Linguini", "Chicken Noodle Soup", "Salmon Teriyaki Bowl", "Chicken Teriyaki Bowl", "Goat Cheese Salad", "Lobster Roll", "French Onion Soup", "Rib-eye Steak", "Chicken Tenders", "Center-cut Sirloin", "BBQ Chicken Pizza", "Chicken Madeira", "Alfredo Chicken", "Beef Lasagna", "Shredded Beef Sandwich"};
 
     public RestaurantsFragment() {
@@ -86,6 +88,32 @@ public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
         if (endpoint.equals("businesses/search")) { // draw markers on map
             JsonArray restaurants = (JsonArray) convertedObject.get("businesses");
 
+            // draw circle of restaurants
+            if(main.currentCircle != null) main.currentCircle.remove();
+            // Instantiating CircleOptions to draw a circle around the marker
+            CircleOptions circleOptions = new CircleOptions();
+            // Specifying the center of the circle
+            circleOptions.center(main.currentBeach.coordinates);
+            // Radius of the circle
+            circleOptions.radius(radius * 1.3);
+            // Border color of the circle
+            circleOptions.strokeColor(Color.BLACK);
+            // Fill color of the circle
+            circleOptions.fillColor(0x30ff0000);
+            // Border width of the circle
+            circleOptions.strokeWidth(2);
+            // Adding the circle to the GoogleMap
+            main.currentCircle = main.mapsFragment.googleMap.addCircle(circleOptions);
+
+            for (int i = main.mapsFragment.markerArray.size() - 1; i > -1; i--) {
+                Marker m = main.mapsFragment.markerArray.get(i);
+                String mTag = (String) m.getTag();
+                if(mTag.contains("Restaurant")) {
+                    m.remove();
+                    main.mapsFragment.markerArray.remove(i);
+                }
+            }
+
             for (JsonElement restaurant : restaurants) {
                 JsonObject resObj = restaurant.getAsJsonObject();
                 String name = resObj.get("name").toString();
@@ -125,7 +153,7 @@ public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
                     Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         public void run() {
-                            yelpService.executeTask(main, main.beachesFragment, "businesses/" + main.currentBeachID);
+                            yelpService.executeTask(main, main.beachesFragment, "businesses/" + main.currentBeach.id);
                         }
                     }, 500);
                     // main.beachesFragment.setView(main.beachesFragment.beachInfolayout);
@@ -143,8 +171,8 @@ public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
             // location text
             JsonObject locationObj = convertedObject.get("location").getAsJsonObject();
             String address = locationObj.get("display_address").getAsJsonArray().get(0).getAsString() + "\n";
-            String city = locationObj.get("city").getAsString() + ", CA\n";
-            address = address + ", " + city + ", CA";
+            String city = locationObj.get("city").getAsString() + ", CA";
+            address = address + ", " + city;
             TextView addressTV = new TextView(restaurantLayout.getContext());
             addressTV.setText(address);
             restaurantLayout.addView(addressTV);
@@ -155,14 +183,14 @@ public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
             menuTV.setText(menu);
             restaurantLayout.addView(menuTV, layoutParams);
             ArrayList<Integer> indices = new ArrayList<Integer>();
-            for(int i =0; i < 3; i++) {
+            for(int i = 0; i < 3; i++) {
                 Integer randIndex = (int) (Math.random() * menuItems.length);
                 while(indices.contains(randIndex))
                     randIndex = (int) (Math.random() * menuItems.length);
                 TextView menuItemTV = new TextView(restaurantLayout.getContext());
                 String menuItem = menuItems[randIndex];
                 menuItemTV.setText(menuItem);
-                restaurantLayout.addView(menuTV);
+                restaurantLayout.addView(menuItemTV);
                 indices.add(randIndex);
             }
 
