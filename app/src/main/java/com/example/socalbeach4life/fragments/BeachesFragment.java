@@ -2,12 +2,16 @@ package com.example.socalbeach4life.fragments;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -46,6 +50,8 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
     public LinearLayout beachListlayout;
     public LinearLayout beachInfolayout;
     public ScrollView beachesScrollView;
+    public TextView globalNumReviewsTV;
+    private int globalNumReviews = 0;
     private MainActivity main;
     private Map<Integer, String> days = new HashMap<>();
     // beachMap maps the beaches name to its corresponding beach object
@@ -265,13 +271,52 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             reviewSection.setText("Reviews");
             beachInfolayout.addView(reviewSection);
 
+            // leave a review layout
+            EditText starsReview = new EditText(beachesScrollView.getContext());
+            starsReview.setHint("stars");
+            starsReview.setInputType(InputType.TYPE_CLASS_NUMBER);
+            beachInfolayout.addView(starsReview);
+            Button leaveReviewButton = new Button(beachesScrollView.getContext());
+            leaveReviewButton.setText("Leave a review");
+            beachInfolayout.addView(leaveReviewButton);
+
+            // add new review to database and update user interface with added review
             final int[] numReviews = {0};
+            leaveReviewButton.setOnClickListener((new View.OnClickListener() {
+                public void onClick(View v) {
+                    String strNextId = numReviews[0]+1 + "";
+                    globalNumReviews += 1;
+                    System.out.println(strNextId);
+                    // store review to database
+                    databaseReference.child("reviews").child(name).child(strNextId)
+                            .child("stars").setValue(Integer.parseInt(starsReview.getText().toString()));
+                    databaseReference.child("reviews").child(name).child(strNextId)
+                            .child("user_name").setValue(getActivity().getIntent().getExtras().getString("name"));
+
+                    TextView review = new TextView(beachesScrollView.getContext());
+                    review.setText("stars:" + Integer.parseInt(starsReview.getText().toString()) + " user name:"
+                            + getActivity().getIntent().getExtras().getString("name"));
+
+                    globalNumReviewsTV.setText("Number of reviews: " + globalNumReviews);
+                    beachInfolayout.addView(review);
+                }
+            }));
+
+            // display reviews
             databaseReference.child("reviews").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     for (DataSnapshot nameSnapshot: snapshot.getChildren()) {
+                        globalNumReviews = 0;
+                        TextView numReviewsTV = new TextView(beachesScrollView.getContext());
+                        numReviewsTV.setText("Number of reviews: " + globalNumReviews);
+                        globalNumReviewsTV = numReviewsTV;
+                        beachInfolayout.addView(numReviewsTV);
                         if(nameSnapshot.getKey().equals(name)) {
-                            numReviews[0] = (int) nameSnapshot.getChildrenCount();
+                            // display number of reviews
+                            globalNumReviews = (int) nameSnapshot.getChildrenCount();
+                            globalNumReviewsTV.setText("Number of reviews: " + globalNumReviews);
+                            // display reviews
                             for (DataSnapshot idSnapshot: nameSnapshot.getChildren()) {
                                 int stars = idSnapshot.child("stars").getValue(Integer.class);
                                 String user_name = idSnapshot.child("user_name").getValue(String.class);
@@ -290,11 +335,9 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                 }
             });
 
-            if(numReviews[0] == 0) {
-                TextView numReviewsTV = new TextView(beachesScrollView.getContext());
-                numReviewsTV.setText("Number of reviews: " + numReviews[0]);
-                beachInfolayout.addView(numReviewsTV);
-            }
+            //
+
+
 
 
             // move google maps camera location to selected beach
