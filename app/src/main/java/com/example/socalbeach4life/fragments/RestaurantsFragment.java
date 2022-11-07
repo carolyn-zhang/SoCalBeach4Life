@@ -31,6 +31,7 @@ import com.google.gson.JsonObject;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,6 +45,7 @@ public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
     private Context context;
     private FrameLayout parentView;
     public Boolean firstLoad = true;
+    private String[] menuItems = new String[] {"Barbecue Plate", "Biscuits and Gravy", "Chicken Fried Rice", "Tonkatsu Ramen", "Fish and Chips", "Ranchera Steak Burrito", "Pesto Chicken Sandwich", "Black Cod with Miso", "Portebello Mushroom Burger", "Blackend Redfish", "Chicken Gumbo", "Breaded Pork Tenderloin", "Buffalo Wings", "Lemon Pepper Wings", "Caesar Salad", "Seasoned Fries", "Charbroiled Oysters", "Carbonara Pasta", "Chicago Deep Dish Pizza", "Clam Chowder", "Margherita Pizza", "Double-Double Cheeseburger", "Philly Cheesesteak", "Pork Cutlet Rice", "Chicken and Waffles", "Blue Crab Fried Rice", "Alfredo Linguini", "Chicken Noodle Soup", "Salmon Teriyaki Bowl", "Chicken Teriyaki Bowl", "Goat Cheese Salad", "Lobster Roll", "French Onion Soup", "Rib-eye Steak", "Chicken Tenders", "Center-cut Sirloin", "BBQ Chicken Pizza", "Chicken Madeira", "Alfredo Chicken", "Beef Lasagna", "Shredded Beef Sandwich"};
 
     public RestaurantsFragment() {
         // Required empty public constructor
@@ -141,15 +143,34 @@ public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
             // location text
             JsonObject locationObj = convertedObject.get("location").getAsJsonObject();
             String address = locationObj.get("display_address").getAsJsonArray().get(0).getAsString() + "\n";
-            String city = locationObj.get("city").getAsString() + "\n";
+            String city = locationObj.get("city").getAsString() + ", CA\n";
+            address = address + ", " + city + ", CA";
             TextView addressTV = new TextView(restaurantLayout.getContext());
-            TextView cityTV = new TextView(restaurantLayout.getContext());
             addressTV.setText(address);
-            cityTV.setText(city);
-            restaurantLayout.addView(addressTV, layoutParams);
-            restaurantLayout.addView(cityTV, layoutParams);
+            restaurantLayout.addView(addressTV);
+
+            // menu text
+            TextView menuTV = new TextView(restaurantLayout.getContext());
+            String menu = "Menu: ";
+            menuTV.setText(menu);
+            restaurantLayout.addView(menuTV, layoutParams);
+            ArrayList<Integer> indices = new ArrayList<Integer>();
+            for(int i =0; i < 3; i++) {
+                Integer randIndex = (int) (Math.random() * menuItems.length);
+                while(indices.contains(randIndex))
+                    randIndex = (int) (Math.random() * menuItems.length);
+                TextView menuItemTV = new TextView(restaurantLayout.getContext());
+                String menuItem = menuItems[randIndex];
+                menuItemTV.setText(menuItem);
+                restaurantLayout.addView(menuTV);
+                indices.add(randIndex);
+            }
 
             // hours text
+            TextView hoursTV = new TextView(restaurantLayout.getContext());
+            String hours = "Hours of Operation: ";
+            hoursTV.setText(hours);
+            restaurantLayout.addView(hoursTV, layoutParams);
             if(convertedObject.get("hours") != null) {
                 JsonArray hoursArray = convertedObject.get("hours").getAsJsonArray();
                 JsonArray openHoursArray = hoursArray.get(0).getAsJsonObject().get("open").getAsJsonArray();
