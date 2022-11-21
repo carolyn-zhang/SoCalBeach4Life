@@ -3,6 +3,7 @@ package com.example.socalbeach4life;
 import com.example.socalbeach4life.fragments.BeachesFragment;
 import com.example.socalbeach4life.fragments.MapsFragment;
 import com.example.socalbeach4life.fragments.RestaurantsFragment;
+import com.example.socalbeach4life.maps.DataParser;
 import com.example.socalbeach4life.maps.FetchURL;
 import com.example.socalbeach4life.yelp.YelpService;
 import com.google.android.gms.maps.GoogleMap;
@@ -10,6 +11,10 @@ import com.google.android.gms.maps.internal.IGoogleMapDelegate;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.firebase.database.DatabaseReference;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -23,7 +28,11 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.List;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(MapsFragment.class)
@@ -131,4 +140,26 @@ public class MapsFragmentUnitTests {
         // then
         assertEquals(actual, expected);
     }
+
+    @Test
+    public void testParseDuration() {
+        // given
+        DataParser dataParser = new DataParser();
+
+        try {
+            JSONObject jsonObject = new JSONObject("{\"routes\":[{\"legs\":[{\"duration\":{\"text\":\"24 mins\"}}]}]}");
+
+            String expected = "24 mins";
+
+            // when
+            String actual = dataParser.parseDuration(jsonObject);
+
+            // then
+            assertEquals(expected, actual);
+        }catch (Exception err){
+            System.out.println(err);
+        }
+    }
+
+
 }
