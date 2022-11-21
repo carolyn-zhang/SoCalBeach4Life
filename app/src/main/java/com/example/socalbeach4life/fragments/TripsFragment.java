@@ -27,7 +27,7 @@ import com.google.firebase.database.ValueEventListener;
  */
 public class TripsFragment extends Fragment {
 
-    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReferenceFromUrl("https://socalbeach4life-2bd0d-default-rtdb.firebaseio.com/");
+    public DatabaseReference databaseReference;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -62,6 +62,7 @@ public class TripsFragment extends Fragment {
         if (getArguments() != null) {
             userid = getArguments().getString(ARG_userid);
         }
+        databaseReference = FirebaseDatabase.getInstance().getReferenceFromUrl("https://socalbeach4life-2bd0d-default-rtdb.firebaseio.com/");
     }
 
     @Override

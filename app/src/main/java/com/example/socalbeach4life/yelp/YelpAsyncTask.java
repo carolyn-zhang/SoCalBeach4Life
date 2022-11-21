@@ -16,22 +16,28 @@ import okhttp3.Response;
 public class YelpAsyncTask extends AsyncTask<Object, Object, ArrayList<Object>> {
     public YelpAsyncResponse delegate = null;
 
-    @Override
-    protected ArrayList<Object> doInBackground(Object... objects) {
-        MainActivity main = (MainActivity) objects[0];
-        String[] strings = (String[]) objects[1];
+    public String buildYelpURL(String... strings) {
         String BASE_URL = "https://api.yelp.com/v3/";
-        String API_KEY = "hGQVfT2R3h6Ww_y-djRk-G431FSipINxuilnFFBcwFmbJsO2azyVCi2ZEjRUYL4gSi4_D-PdXg6OqVKiotXxCyPWphPDN3D9dfi5cp1EwGEu2KF5XqfhXMSTcpBZY3Yx";
-        OkHttpClient client = new OkHttpClient().newBuilder().build();
         String endpoint = strings[0]; // i.e. businesses/search
-        String builder = BASE_URL + endpoint + "?";
+        String url = BASE_URL + endpoint + "?";
         for(int i = 1; i < strings.length - 1; i += 2) {
             String key = strings[i];
             String value = strings[i + 1];
             value = value.replace(" ", "%20");
-            if (i > 1) builder += "&";
-            builder += key + "=" + value;
+            if (i > 1) url += "&";
+            url += key + "=" + value;
         }
+
+        return url;
+    }
+
+    @Override
+    protected ArrayList<Object> doInBackground(Object... objects) {
+        MainActivity main = (MainActivity) objects[0];
+        String[] strings = (String[]) objects[1];
+        OkHttpClient client = new OkHttpClient().newBuilder().build();
+        String builder = buildYelpURL(strings);
+        String API_KEY = "hGQVfT2R3h6Ww_y-djRk-G431FSipINxuilnFFBcwFmbJsO2azyVCi2ZEjRUYL4gSi4_D-PdXg6OqVKiotXxCyPWphPDN3D9dfi5cp1EwGEu2KF5XqfhXMSTcpBZY3Yx";
         Request request = new Request.Builder().url(builder).method("GET", null).addHeader(
                         "Authorization",
                         "Bearer " + API_KEY)
@@ -57,7 +63,7 @@ public class YelpAsyncTask extends AsyncTask<Object, Object, ArrayList<Object>> 
         }
         ArrayList<Object> resObjects = new ArrayList<>();
         resObjects.add(main);
-        resObjects.add(endpoint + "|" + responseString);
+        resObjects.add(strings[0] + "|" + responseString);
         return resObjects;
     }
 
