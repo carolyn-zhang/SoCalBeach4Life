@@ -153,7 +153,7 @@ public class RestaurantsFragmentUnitTests {
     }
 
     @Test
-    public void testParseBeaches() {
+    public void testParseRestaurants() {
         // given
         String testID = "mock ID";
         String testName = "mock name";
