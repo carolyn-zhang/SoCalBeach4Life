@@ -20,6 +20,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import android.location.Location;
+import android.location.LocationManager;
+
 import androidx.fragment.app.Fragment;
 
 import org.junit.runner.RunWith;
@@ -70,7 +73,7 @@ public class MapsFragmentUnitTests {
     }
 
     @Test
-    public void testRestaurantMarkerOnClick() throws Exception {
+    public void testParkingMarkerOnClick() throws Exception {
         MapsFragment mapsFragment = new MapsFragment();
         RestaurantsFragment mockRestaurantsFragment = mock(RestaurantsFragment.class);
         BeachesFragment mockBeachesFragment = mock(BeachesFragment.class);
@@ -97,7 +100,7 @@ public class MapsFragmentUnitTests {
     }
 
     @Test
-    public void testParkingMarkerOnClick() throws Exception {
+    public void testRestaurantMarkerOnClick() throws Exception {
         MapsFragment mapsFragment = new MapsFragment();
         RestaurantsFragment mockRestaurantsFragment = mock(RestaurantsFragment.class);
         BeachesFragment mockBeachesFragment = mock(BeachesFragment.class);
@@ -142,11 +145,20 @@ public class MapsFragmentUnitTests {
     }
 
     @Test
+    public void testDefaultLocation() throws Exception {
+        MapsFragment mapsFragment = new MapsFragment();
+
+        assertEquals(34.0522, mapsFragment.currLocLatitude, 0.001);
+        assertEquals(-118.2437, mapsFragment.currLocLongitude, 0.001);
+    }
+
+    @Test
     public void testParseDuration() {
         // given
         DataParser dataParser = new DataParser();
 
         try {
+            // modeling data from : https://maps.googleapis.com/maps/api/directions/json?departure_time=now&origin=33.902099,-118.358474&destination=34.0224,-118.2851&mode=driving&key=AIzaSyBobTTzoNhhHoQQFa9iY7CPG_kYQrxdRtU
             JSONObject jsonObject = new JSONObject("{\"routes\":[{\"legs\":[{\"duration\":{\"text\":\"24 mins\"}}]}]}");
 
             String expected = "24 mins";
@@ -160,6 +172,4 @@ public class MapsFragmentUnitTests {
             System.out.println(err);
         }
     }
-
-
 }

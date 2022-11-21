@@ -69,8 +69,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     public ArrayList<Marker> markerArray = new ArrayList<>();
     FusedLocationProviderClient client;
     // Initialize current location to LA coordinates
-    private double currLocLatitude = 34.0522;
-    private double currLocLongitude = -118.2437;
+    public double currLocLatitude = 34.0522;
+    public double currLocLongitude = -118.2437;
 
     public YelpService yelpService = new YelpService();
 
@@ -359,7 +359,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     }
 
     @SuppressLint("MissingPermission")
-    private void getCurrentLocation()
+    public void getCurrentLocation()
     {
         // Initialize Location manager
         LocationManager locationManager
