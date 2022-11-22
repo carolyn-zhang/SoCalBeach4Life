@@ -56,35 +56,43 @@ import java.util.ArrayList;
 public class MapsFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener
 {
     // create DatabaseReference object to access realtime database
-    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReferenceFromUrl("https://socalbeach4life-2bd0d-default-rtdb.firebaseio.com/");
+    public DatabaseReference databaseReference;
 
     public GoogleMap googleMap;
     private Boolean mapReady = false;
-    private MainActivity main;
+    public MainActivity main;
     public Polyline currentPolyline;
     public Marker currentBeachMarker;
     public Button etaButton;
     public Button tripButton;
     private SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z");
-    public ArrayList<Marker> markerArray = new ArrayList<Marker>();
+    public ArrayList<Marker> markerArray = new ArrayList<>();
     FusedLocationProviderClient client;
-    // Initialize to LA coordinates
-    private double latitude = 34.0522;
-    private double longitude = -118.2437;
+    // Initialize current location to LA coordinates
+    public double currLocLatitude = 34.0522;
+    public double currLocLongitude = -118.2437;
 
+    public YelpService yelpService = new YelpService();
+
+    @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
         mapReady = true;
-        LatLng LA = new LatLng(latitude, longitude);
+        LatLng LA = new LatLng(currLocLatitude, currLocLongitude);
         googleMap.setMinZoomPreference(10);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
         googleMap.setOnMarkerClickListener(this);
+
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            googleMap.setMyLocationEnabled(true);
+        }
     }
 
 
     public void resetCamera() {
-        LatLng LA = new LatLng(latitude, longitude);
+        LatLng LA = new LatLng(currLocLatitude, currLocLongitude);
         googleMap.setMinZoomPreference(10);
         googleMap.setMaxZoomPreference(10);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(LA));
@@ -112,8 +120,39 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         }
     }
 
+    public ArrayList<Integer> handleBeachMarkerClick(ArrayList<String> markerTags, String tag) {
+        ArrayList<Integer> res = new ArrayList<>();
+        for (int i = markerTags.size() - 1; i > -1; i--) {
+            String mTag = markerTags.get(i);
+            if(mTag.contains("Parking") || mTag.contains("Restaurant")) {
+                res.add(i);
+            }
+        }
+
+        // Show beach information in bottom fragment
+        String beachID = tag.substring(tag.indexOf(' ') + 1);
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                yelpService.executeTask(main, main.beachesFragment, "businesses/" + beachID);
+            }
+        }, 500);
+
+        return res;
+    }
+
+    public void handleParkingMarkerClick(String url) {
+        new FetchURL(this.getContext()).execute(url, "driving");
+    }
+
+    public void handleRestaurantMarkerClick(String restaurantID, String url) {
+        yelpService.executeTask(main, main.restaurantsFragment, "businesses/" + restaurantID);
+        new FetchURL(this.getContext()).execute(url, "walking");
+    }
+
     @Override
-    public boolean onMarkerClick(final Marker marker) {
+    public boolean onMarkerClick(Marker marker) {
 
         String tag = (String) marker.getTag();
 
@@ -137,57 +176,43 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
             }
 
             setLocation(latitude, longitude);
+            main = (MainActivity) getActivity();
 
             // remove other parking lot and restaurant markers
+            ArrayList<String> markerTags = new ArrayList<>();
             for (int i = markerArray.size() - 1; i > -1; i--) {
-                Marker m = markerArray.get(i);
+                Marker m = (Marker) markerArray.get(i);
                 String mTag = (String) m.getTag();
-                if(mTag.contains("Parking") || mTag.contains("Restaurant")) {
-                    m.remove();
-                    markerArray.remove(i);
-                }
+                markerTags.add(mTag);
             }
-
-            // Show beach information in bottom fragment
-            main = (MainActivity) getActivity();
-            String beachID = tag.substring(tag.indexOf(' ') + 1);
-            YelpService yelpService = new YelpService();
-
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                public void run() {
-                    yelpService.executeTask(main, main.beachesFragment, "businesses/" + beachID);
-                }
-            }, 500);
-//            yelpService.executeTask(main.restaurantsFragment,
-//                    "businesses/search",
-//                    "term", "restaurants", "location", "Los Angeles",
-//                    "radius", "1000", "sort_by", "distance");
+            ArrayList<Integer> tagsToRemove = handleBeachMarkerClick(markerTags, tag);
+            for (int i = 0; i < tagsToRemove.size(); i++) {
+                int index = tagsToRemove.get(i);
+                markerArray.remove(index);
+            }
         } else if (tag.contains("Parking")) {
             // driving route to parking lot
             etaButton.setVisibility(View.VISIBLE);
             tripButton.setVisibility(View.VISIBLE);
-            LatLng uscLoc = new LatLng(34.0224, -118.2851);
-            String url = getRouteURL(pos, uscLoc, "driving");
-            new FetchURL(this.getContext()).execute(url, "driving");
+            LatLng currLoc = new LatLng(currLocLatitude, currLocLongitude);
+            String url = getRouteURL(pos, currLoc, "driving");
 
+            handleParkingMarkerClick(url);
         } else if (tag.contains("Restaurant")) {
             // show restaurant information in bottom fragment
             main = (MainActivity) getActivity();
             String restaurantID = tag.substring(tag.indexOf(' ') + 1);
-            YelpService yelpService = new YelpService();
-            yelpService.executeTask(main, main.restaurantsFragment, "businesses/" + restaurantID);
 
             // walking route to restaurant from beach
             etaButton.setVisibility(View.VISIBLE);
             tripButton.setVisibility(View.GONE);
             String url = getRouteURL(pos, currentBeachMarker.getPosition(), "walking");
-            new FetchURL(this.getContext()).execute(url, "walking");
+            handleRestaurantMarkerClick(restaurantID, url);
         }
         return false;
     }
 
-    private String getRouteURL(LatLng origin, LatLng dest, String directionMode) {
+    public String getRouteURL(LatLng origin, LatLng dest, String directionMode) {
         // Origin of route
         String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
         // Destination of route
@@ -202,7 +227,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         String output = "json";
         // Building the URL to the web service
         String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?"
-                + parameters + "&key=" + getString(R.string.google_maps_key);
+                + parameters + "&key=AIzaSyBobTTzoNhhHoQQFa9iY7CPG_kYQrxdRtU";
         return url;
     }
 
@@ -260,6 +285,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
+        databaseReference = FirebaseDatabase.getInstance().getReferenceFromUrl("https://socalbeach4life-2bd0d-default-rtdb.firebaseio.com/");
         etaButton.setVisibility(View.GONE);
         tripButton.setVisibility(View.GONE);
         tripButton.setText("Start Trip");
@@ -333,7 +359,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
     }
 
     @SuppressLint("MissingPermission")
-    private void getCurrentLocation()
+    public void getCurrentLocation()
     {
         // Initialize Location manager
         LocationManager locationManager
@@ -356,9 +382,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                         // Check condition
                         if (location != null) {
                             // When location result is not null set latitude
-                            latitude = location.getLatitude();
+                            currLocLatitude = location.getLatitude();
                             // set longitude
-                            longitude = location.getLongitude();
+                            currLocLongitude = location.getLongitude();
                             resetCamera();
                         }
                         else {
@@ -387,9 +413,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, Google
                                             = locationResult
                                             .getLastLocation();
                                     // Set latitude
-                                    latitude = location1.getLatitude();
+                                    currLocLatitude = location1.getLatitude();
                                     // set longitude
-                                    longitude = location1.getLongitude();
+                                    currLocLongitude = location1.getLongitude();
                                     resetCamera();
                                 }
                             };

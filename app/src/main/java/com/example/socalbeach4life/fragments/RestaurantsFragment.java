@@ -4,8 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,13 +23,12 @@ import com.example.socalbeach4life.data.model.Restaurant;
 import com.example.socalbeach4life.yelp.YelpAsyncResponse;
 import com.example.socalbeach4life.yelp.YelpService;
 import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,12 +36,12 @@ import java.util.Map;
 
 public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
 
-    private MainActivity main;
-    private ScrollView restaurantsScrollView;
-    private Map<Integer, String> days = new HashMap<>();
-    private YelpService yelpService = new YelpService();
-    private Context context;
-    private FrameLayout parentView;
+    public MainActivity main;
+    public ScrollView restaurantsScrollView;
+    public Map<Integer, String> days = new HashMap<>();
+    public YelpService yelpService = new YelpService();
+    public Context context;
+    public FrameLayout parentView;
     public Boolean firstLoad = true;
     public int radius = 1000;
     private String[] menuItems = new String[] {"Barbecue Plate", "Biscuits and Gravy", "Chicken Fried Rice", "Tonkatsu Ramen", "Fish and Chips", "Ranchera Steak Burrito", "Pesto Chicken Sandwich", "Black Cod with Miso", "Portebello Mushroom Burger", "Blackend Redfish", "Chicken Gumbo", "Breaded Pork Tenderloin", "Buffalo Wings", "Lemon Pepper Wings", "Caesar Salad", "Seasoned Fries", "Charbroiled Oysters", "Carbonara Pasta", "Chicago Deep Dish Pizza", "Clam Chowder", "Margherita Pizza", "Double-Double Cheeseburger", "Philly Cheesesteak", "Pork Cutlet Rice", "Chicken and Waffles", "Blue Crab Fried Rice", "Alfredo Linguini", "Chicken Noodle Soup", "Salmon Teriyaki Bowl", "Chicken Teriyaki Bowl", "Goat Cheese Salad", "Lobster Roll", "French Onion Soup", "Rib-eye Steak", "Chicken Tenders", "Center-cut Sirloin", "BBQ Chicken Pizza", "Chicken Madeira", "Alfredo Chicken", "Beef Lasagna", "Shredded Beef Sandwich"};
@@ -78,6 +75,62 @@ public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
 
     }
 
+    public static Restaurant parseRestaurant(JsonObject resObject) {
+        String id = resObject.get("id").toString();
+        id = id.substring(1, id.length() - 1);
+        String name = resObject.get("name").toString();
+        name = name.substring(1, name.length() - 1);
+        Double latitude = resObject.get("coordinates").getAsJsonObject().get("latitude").getAsDouble();
+        Double longitude = resObject.get("coordinates").getAsJsonObject().get("longitude").getAsDouble();
+        LatLng coordinates = new LatLng(latitude, longitude);
+        Restaurant restaurant = new Restaurant(id, name, coordinates);
+        return restaurant;
+    }
+
+    public void placeRestaurantMarkers(JsonArray restaurants) {
+        for (JsonElement restaurantEl : restaurants) {
+            Restaurant restaurant = parseRestaurant(restaurantEl.getAsJsonObject());
+            main.mapsFragment.setMarker(restaurant.coordinates.latitude, restaurant.coordinates.longitude, restaurant.name, "Restaurant " + restaurant.id);
+        }
+    }
+
+    public ArrayList<String> parseRestaurantHours(JsonObject dayHours) {
+        Integer startInt = dayHours.get("start").getAsInt();
+        Integer endInt = dayHours.get("end").getAsInt();
+        String start = "";
+        String end = "";
+        if (startInt < 1000) {
+            start = startInt.toString().substring(0, 1) + ":" + startInt.toString().substring(1) + " AM";
+        } else if (startInt < 1200) {
+            start = startInt.toString().substring(0, 2) + ":" + startInt.toString().substring(2) + " AM";
+        } else if (startInt < 1300) {
+            start = startInt.toString().substring(0, 2) + ":" + startInt.toString().substring(2) + " PM";
+        } else if (startInt < 2200) {
+            startInt -= 1200;
+            start = startInt.toString().substring(0, 1) + ":" + startInt.toString().substring(1) + " PM";
+        } else {
+            startInt -= 1200;
+            start = startInt.toString().substring(0, 2) + ":" + startInt.toString().substring(2) + " PM";
+        }
+        if (endInt < 1000) {
+            end = endInt.toString().substring(0, 1) + ":" + endInt.toString().substring(1) + " AM";
+        } else if (endInt < 1200) {
+            end = endInt.toString().substring(0, 2) + ":" + endInt.toString().substring(2) + " AM";
+        } else if (endInt < 1300) {
+            end = endInt.toString().substring(0, 2) + ":" + endInt.toString().substring(2) + " PM";
+        } else if (endInt < 2200) {
+            endInt -= 1200;
+            end = endInt.toString().substring(0, 1) + ":" + endInt.toString().substring(1) + " PM";
+        } else {
+            endInt -= 1200;
+            end = endInt.toString().substring(0, 2) + ":" + endInt.toString().substring(2) + " PM";
+        }
+        ArrayList<String> res = new ArrayList<String>();
+        res.add(start);
+        res.add(end);
+        return res;
+    }
+
     @Override
     public void processFinish(MainActivity main, String output) {
         this.main = main;
@@ -106,7 +159,7 @@ public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
             main.currentCircle = main.mapsFragment.googleMap.addCircle(circleOptions);
 
             for (int i = main.mapsFragment.markerArray.size() - 1; i > -1; i--) {
-                Marker m = main.mapsFragment.markerArray.get(i);
+                Marker m = (Marker) main.mapsFragment.markerArray.get(i);
                 String mTag = (String) m.getTag();
                 if(mTag.contains("Restaurant")) {
                     m.remove();
@@ -114,16 +167,7 @@ public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
                 }
             }
 
-            for (JsonElement restaurant : restaurants) {
-                JsonObject resObj = restaurant.getAsJsonObject();
-                String name = resObj.get("name").toString();
-                name = name.substring(1, name.length() - 1);
-                String id = resObj.get("id").toString();
-                id = id.substring(1, id.length() - 1);
-                Double latitude = resObj.get("coordinates").getAsJsonObject().get("latitude").getAsDouble();
-                Double longitude = resObj.get("coordinates").getAsJsonObject().get("longitude").getAsDouble();
-                main.mapsFragment.setMarker(latitude, longitude, name, "Restaurant " + id);
-            }
+            placeRestaurantMarkers(restaurants);
 
         } else { // display restaurant info
             main.beachesFragment.beachesScrollView.removeAllViews();
@@ -211,39 +255,10 @@ public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
                 days.put(6, "Sunday");
                 for (int i = 0; i < openHoursArray.size(); i++) {
                     JsonObject dayHours = openHoursArray.get(i).getAsJsonObject();
-                    Integer startInt = dayHours.get("start").getAsInt();
-                    Integer endInt = dayHours.get("end").getAsInt();
-                    String start = "";
-                    String end = "";
-                    if (startInt < 1000) {
-                        start = startInt.toString().substring(0, 1) + ":" + startInt.toString().substring(1) + " AM";
-                    } else if (startInt < 1200) {
-                        start = startInt.toString().substring(0, 2) + ":" + startInt.toString().substring(2) + " AM";
-                    } else if (startInt < 1300) {
-                        start = startInt.toString().substring(0, 2) + ":" + startInt.toString().substring(2) + " PM";
-                    } else if (startInt < 2200) {
-                        startInt -= 1200;
-                        start = startInt.toString().substring(0, 1) + ":" + startInt.toString().substring(1) + " PM";
-                    } else {
-                        startInt -= 1200;
-                        start = startInt.toString().substring(0, 2) + ":" + startInt.toString().substring(2) + " PM";
-                    }
-                    if (endInt < 1000) {
-                        end = endInt.toString().substring(0, 1) + ":" + endInt.toString().substring(1) + " AM";
-                    } else if (endInt < 1200) {
-                        end = endInt.toString().substring(0, 2) + ":" + endInt.toString().substring(2) + " AM";
-                    } else if (endInt < 1300) {
-                        end = endInt.toString().substring(0, 2) + ":" + endInt.toString().substring(2) + " PM";
-                    } else if (startInt < 2200) {
-                        endInt -= 1200;
-                        end = endInt.toString().substring(0, 1) + ":" + endInt.toString().substring(1) + " PM";
-                    } else {
-                        endInt -= 1200;
-                        end = endInt.toString().substring(0, 2) + ":" + endInt.toString().substring(2) + " PM";
-                    }
+                    ArrayList<String> hourBounds = parseRestaurantHours(dayHours);
                     Integer day = dayHours.get("day").getAsInt();
                     TextView dayTV = new TextView(restaurantLayout.getContext());
-                    String dayString = days.get(day) + "   " + start + " - " + end + "\n";
+                    String dayString = days.get(day) + "   " + hourBounds.get(0) + " - " + hourBounds.get(1) + "\n";
                     dayTV.setText(dayString);
                     restaurantLayout.addView(dayTV, layoutParams);
                 }
