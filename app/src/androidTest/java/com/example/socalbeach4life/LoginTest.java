@@ -74,4 +74,14 @@ public class LoginTest {
         onView(withId(R.id.logout_button)).perform(click());
         onView(withId(R.id.login_email)).check(matches(isDisplayed()));
     }
+
+    @Test
+    public void checkProfile() {
+        onView(withId(R.id.login_email)).perform(typeText("achueh@usc.edu"));
+        onView(withId(R.id.login_password)).perform(typeText("123"));
+        closeSoftKeyboard();
+        onView(withId(R.id.login_button)).perform(click());
+        onView(withId(R.id.profile)).perform(click());
+        onView(withText("achueh@usc.edu")).check(matches(isDisplayed()));
+    }
 }

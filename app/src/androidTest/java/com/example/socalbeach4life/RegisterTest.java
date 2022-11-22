@@ -3,14 +3,12 @@ package com.example.socalbeach4life;
 import static androidx.test.espresso.Espresso.closeSoftKeyboard;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.scrollTo;
-import static androidx.test.espresso.action.ViewActions.swipeUp;
 import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
@@ -38,22 +36,23 @@ import com.example.socalbeach4life.databinding.ActivityRegisterBinding;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class ReviewTest {
+public class RegisterTest {
+
     @Rule
-    public ActivityScenarioRule<MainActivity> activityRule =
-            new ActivityScenarioRule<>(MainActivity.class);
+    public ActivityScenarioRule<Login> activityRule =
+            new ActivityScenarioRule<>(Login.class);
 
     @Test
-    public void createReview() {
-        onView(withText("Mother's Beach")).perform(click());
-        onView(withText("LEAVE A REVIEW")).perform(scrollTo()).check(matches(isDisplayed()));
-        onView(withHint("stars")).check(matches(isDisplayed()));
+    public void registerPageDisplayed() {
+        onView(withId(R.id.register_now)).perform(click());
+        onView(withId(R.id.register_email)).check(matches(isDisplayed()));
     }
 
     @Test
-    public void checkReviews() {
-        onView(withText("Mother's Beach")).perform(click());
-        onView(withId(R.id.beachesScrollView)).perform(swipeUp());
-        onView(withText("stars:1")).check(matches(isDisplayed()));
+    public void returnToLoginPage() throws InterruptedException {
+        onView(withId(R.id.register_now)).perform(click());
+        Thread.sleep(2000);
+        onView(withId(R.id.login_now)).perform(click());
+        onView(withId(R.id.login_email)).check(matches(isDisplayed()));
     }
 }

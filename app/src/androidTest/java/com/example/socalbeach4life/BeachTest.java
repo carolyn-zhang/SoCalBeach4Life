@@ -54,6 +54,18 @@ public class BeachTest {
     }
 
     @Test
+    public void beachDistance() {
+        onView(withText("7.53 mi")).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void returnToMap() {
+        onView(withText("Marina Beach")).perform(click());
+        onView(withText("BACK TO LIST")).perform(click());
+        onView(withText("7.53 mi")).check(matches(isDisplayed()));
+    }
+
+    @Test
     public void drawCircles() {
         onView(withText("Marina Beach")).perform(click());
         onView(withText("1000")).check(matches(isDisplayed()));

@@ -6,6 +6,7 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.swipeUp;
 import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
@@ -39,17 +40,18 @@ import com.example.socalbeach4life.databinding.ActivityRegisterBinding;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class RouteTest {
+public class TripsTest {
     @Rule
-    public ActivityScenarioRule<MainActivity> activityRule =
-            new ActivityScenarioRule<>(MainActivity.class);
+    public ActivityScenarioRule<Login> activityRule =
+            new ActivityScenarioRule<>(Login.class);
 
-//    @Test
-//    public void completeRoute() throws InterruptedException {
-//        onView(withText("The Beach Society")).perform(click());
-//        UiDevice device = UiDevice.getInstance(getInstrumentation());
-//        UiObject marker = device.findObject(new UiSelector().descriptionContains("Parking"));
-//        marker.click();
-//        Thread.sleep(10000);
-//    }
+    @Test
+    public void checkTrips() {
+        onView(withId(R.id.login_email)).perform(typeText("achueh@usc.edu"));
+        onView(withId(R.id.login_password)).perform(typeText("123"));
+        closeSoftKeyboard();
+        onView(withId(R.id.login_button)).perform(click());
+        onView(withId(R.id.profile)).perform(click());
+        onView(withText("Previous Trips")).check(matches(isDisplayed()));
+    }
 }
