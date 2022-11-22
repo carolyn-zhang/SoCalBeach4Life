@@ -51,8 +51,9 @@ public class LoginTest {
         onView(withId(R.id.login_email)).perform(typeText("achueh@usc.edu"));
         onView(withId(R.id.login_password)).perform(typeText("123"));
         closeSoftKeyboard();
+        Intents.init();
         onView(withId(R.id.login_button)).perform(click());
-        onView(withId(R.id.login_email)).check(doesNotExist());
+        intended(hasComponent(MainActivity.class.getName()));
     }
 
     @Test
