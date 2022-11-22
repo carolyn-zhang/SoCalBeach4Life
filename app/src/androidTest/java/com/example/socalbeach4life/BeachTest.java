@@ -4,7 +4,6 @@ import static androidx.test.espresso.Espresso.closeSoftKeyboard;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.typeText;
-import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
@@ -36,42 +35,33 @@ import com.example.socalbeach4life.databinding.ActivityRegisterBinding;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class LoginTest {
-
+public class BeachTest {
     @Rule
-    public ActivityScenarioRule<Login> activityRule =
-            new ActivityScenarioRule<>(Login.class);
+    public ActivityScenarioRule<MainActivity> activityRule =
+            new ActivityScenarioRule<>(MainActivity.class);
 
     @Test
-    public void loginPageDisplayed() {
-        onView(withId(R.id.login_email)).check(matches(isDisplayed()));    }
-
-    @Test
-    public void loginSuccessful() {
-        onView(withId(R.id.login_email)).perform(typeText("achueh@usc.edu"));
-        onView(withId(R.id.login_password)).perform(typeText("123"));
-        closeSoftKeyboard();
-        onView(withId(R.id.login_button)).perform(click());
-        onView(withId(R.id.login_email)).check(doesNotExist());
+    public void beachesDisplayed() {
+        onView(withText("Southern California Aquatics or SCAQ")).check(matches(isDisplayed()));
+        onView(withText("Marina Beach")).check(matches(isDisplayed()));
+        onView(withText("Mother's Beach")).check(matches(isDisplayed()));
     }
 
     @Test
-    public void loginFail() {
-        onView(withId(R.id.login_email)).perform(typeText("achueh@usc.edu"));
-        onView(withId(R.id.login_password)).perform(typeText("x"));
-        closeSoftKeyboard();
-        onView(withId(R.id.login_button)).perform(click());
-        onView(withId(R.id.login_email)).check(matches(isDisplayed()));
+    public void beachDetails() {
+        onView(withText("Marina Beach")).perform(click());
+        onView(withText("BACK TO LIST")).check(matches(isDisplayed()));
     }
 
     @Test
-    public void logoutSuccessful() {
-        onView(withId(R.id.login_email)).perform(typeText("achueh@usc.edu"));
-        onView(withId(R.id.login_password)).perform(typeText("123"));
-        closeSoftKeyboard();
-        onView(withId(R.id.login_button)).perform(click());
-        onView(withId(R.id.profile)).perform(click());
-        onView(withId(R.id.logout_button)).perform(click());
-        onView(withId(R.id.login_email)).check(matches(isDisplayed()));
+    public void drawCircles() {
+        onView(withText("Marina Beach")).perform(click());
+        onView(withText("1000")).check(matches(isDisplayed()));
+        onView(withText("2000")).check(matches(isDisplayed()));
+        onView(withText("3000")).check(matches(isDisplayed()));
+        onView(withText("1000")).perform(click());
+        onView(withText("2000")).perform(click());
+        onView(withText("3000")).perform(click());
     }
+
 }
