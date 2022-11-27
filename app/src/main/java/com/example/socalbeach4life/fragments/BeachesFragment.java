@@ -52,7 +52,6 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
     public TextView globalAverageScoreTV;
     public CheckBox anonymousReview;
     private int globalNumReviews = 0;
-    private double globalAverageScore = 0.0;
     private MainActivity main;
     private Map<Integer, String> days = new HashMap<>();
     public Boolean setMarker = true;
@@ -331,20 +330,23 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             Button leaveReviewButton = new Button(beachesScrollView.getContext());
             leaveReviewButton.setText("Leave a review");
             beachInfolayout.addView(leaveReviewButton);
+            globalNumReviews = 0;
+            TextView numReviewsTV = new TextView(beachesScrollView.getContext());
+            globalNumReviewsTV = numReviewsTV;
+            globalNumReviewsTV.setText("Number of reviews: 0");
+            beachInfolayout.addView(globalNumReviewsTV);
+            TextView reviewsScoreTV = new TextView(beachesScrollView.getContext());
+            globalAverageScoreTV = reviewsScoreTV;
+            globalAverageScoreTV.setText("Overall score: none");
+            beachInfolayout.addView(globalAverageScoreTV);
 
             // add new review to database and update user interface with added review
             leaveReviewButton.setOnClickListener((new View.OnClickListener() {
                 public void onClick(View v) {
                     if(starsReview.getText().toString().trim().length() > 0) {
                         System.out.println(starsReview.getText().toString());
-                        // recalculate average
-                        double prevSum = globalAverageScore * globalNumReviews;
-
-                        double newSum = prevSum + Integer.parseInt(starsReview.getText().toString());
-
-                        double newScore = newSum / (globalNumReviews + 1);
-
-                        globalAverageScoreTV.setText("Overall score: " + String.format("%.1f", newScore) + " stars");
+                        // recalculate average and number of review
+                        updateScoreAndNumReview(name);
 
                         globalNumReviews += 1;
                         String strNextId = String.valueOf(globalNumReviews);
@@ -353,22 +355,46 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                         databaseReference.child("reviews").child(name).child(strNextId)
                                 .child("stars").setValue(Integer.parseInt(starsReview.getText().toString()));
 
+                        databaseReference.child("reviews").child(name).child(strNextId)
+                                .child("user_id").setValue(getActivity().getIntent().getExtras().getString("userid"));
+
                         if(!anonymousReview.isChecked()) { // user wants name to display
                             databaseReference.child("reviews").child(name).child(strNextId)
                                     .child("user_name").setValue(getActivity().getIntent().getExtras().getString("name"));
                         }
 
                         // add review to layout because rendering from database not immediate
+                        LinearLayout line = new LinearLayout(beachListlayout.getContext());
                         TextView review = new TextView(beachesScrollView.getContext());
+                        Button deleteButton = new Button(beachesScrollView.getContext());
+                        deleteButton.setText("delete");
+                        deleteButton.setOnClickListener((new View.OnClickListener() {
+                            public void onClick(View v) {
+                                // delete from view
+                                beachInfolayout.removeView(line);
+                                // delete from database
+                                databaseReference.child("reviews").child(name).child(strNextId).removeValue();
+                                // update number of reviews
+                                globalNumReviews -= 1;
+                                // recalculate overall score
+                                updateScoreAndNumReview(name);
+                            }
+                        }));
+
                         if(!anonymousReview.isChecked()) {
                             review.setText("stars:" + Integer.parseInt(starsReview.getText().toString()) + " user name:"
                                     + getActivity().getIntent().getExtras().getString("name"));
                         } else {
                             review.setText("stars:" + Integer.parseInt(starsReview.getText().toString()));
                         }
-
+                        line.addView(review);
+                        line.addView(deleteButton);
+                        line.setBackgroundColor(Color.parseColor("gray"));
                         globalNumReviewsTV.setText("Number of reviews: " + globalNumReviews);
-                        beachInfolayout.addView(review);
+                        beachInfolayout.addView(line);
+                        TextView emptyLine = new TextView(beachListlayout.getContext());
+                        emptyLine.setHeight(10);
+                        beachInfolayout.addView(emptyLine);
 
                         starsReview.getText().clear();
                     }
@@ -383,37 +409,56 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     for (DataSnapshot nameSnapshot: snapshot.getChildren()) {
-                        globalNumReviews = 0;
-                        globalAverageScore = 0;
-                        TextView numReviewsTV = new TextView(beachesScrollView.getContext());
-                        globalNumReviewsTV = numReviewsTV;
-                        beachInfolayout.addView(globalNumReviewsTV);
-                        TextView reviewsScoreTV = new TextView(beachesScrollView.getContext());
-                        globalAverageScoreTV = reviewsScoreTV;
-                        beachInfolayout.addView(globalAverageScoreTV);
                         if(nameSnapshot.getKey().equals(name)) {
                             // display number of reviews
                             globalNumReviews = (int) nameSnapshot.getChildrenCount();
                             globalNumReviewsTV.setText("Number of reviews: " + globalNumReviews);
-                            double sum = 0;
+
                             // display reviews
                             for (DataSnapshot idSnapshot: nameSnapshot.getChildren()) {
                                 int stars = idSnapshot.child("stars").getValue(Integer.class);
-                                sum += stars;
+                                LinearLayout line = new LinearLayout(beachListlayout.getContext());
+                                TextView review = new TextView(beachesScrollView.getContext());
+                                Button deleteButton = new Button(beachesScrollView.getContext());
+                                deleteButton.setText("delete");
+
+                                // check whether to display username
                                 if(idSnapshot.child("user_name").exists()) {
                                     String user_name = idSnapshot.child("user_name").getValue(String.class);
-                                    TextView review = new TextView(beachesScrollView.getContext());
                                     review.setText("stars:" + stars + " user name:" + user_name);
-                                    beachInfolayout.addView(review);
+
                                 } else { // no user name stored for this review
-                                    TextView review = new TextView(beachesScrollView.getContext());
                                     review.setText("stars:" + stars);
-                                    beachInfolayout.addView(review);
                                 }
+                                line.addView(review);
+
+                                // check whether to allow review deletion (userid matches)
+                                if(idSnapshot.child("user_id").exists()) {
+                                    String user_id = idSnapshot.child("user_id").getValue(String.class);
+                                    if(user_id.equals(getActivity().getIntent().getExtras().getString("userid")))
+                                        line.addView(deleteButton);
+                                        deleteButton.setOnClickListener((new View.OnClickListener() {
+                                            public void onClick(View v) {
+                                                // delete from view
+                                                beachInfolayout.removeView(line);
+                                                // delete from database
+                                                databaseReference.child("reviews").child(name).child(idSnapshot.getKey()).removeValue();
+                                                // update number of reviews
+                                                globalNumReviews -= 1;
+                                                // recalculate overall score and number of review
+                                                updateScoreAndNumReview(name);
+                                            }
+                                        }));
+                                }
+                                line.setBackgroundColor(Color.parseColor("gray"));
+                                beachInfolayout.addView(line);
+
+                                TextView emptyLine = new TextView(beachListlayout.getContext());
+                                emptyLine.setHeight(10);
+                                beachInfolayout.addView(emptyLine);
                             }
-                            // display beach overall score
-                            globalAverageScore = sum/globalNumReviews;
-                            globalAverageScoreTV.setText("Overall score: " + String.format("%.1f", sum/globalNumReviews) + " stars");
+                            // display beach overall score and number of reviews
+                            updateScoreAndNumReview(name);
                             break;
                         }
                     }
@@ -425,15 +470,48 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                 }
             });
 
-            //
-
-
-
-
             // move google maps camera location to selected beach
             main.mapsFragment.setLocation(latitude, longitude);
             if(setMarker) setCurrentBeachMarker(main, latitude, longitude, name);
         }
+    }
+
+    public void updateScoreAndNumReview(String beachName) {
+        final int[] found = {0};
+        DatabaseReference x = databaseReference.child("reviews");
+        x.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot nameSnapshot: snapshot.getChildren()) {
+
+                    if(nameSnapshot.getKey().equals(beachName)) { // found beach
+                        found[0] = 1;
+                        // get number of reviews
+                        int numReviews = (int) nameSnapshot.getChildrenCount();
+                        double sum = 0;
+                        // get sum of scores
+                        for (DataSnapshot idSnapshot: nameSnapshot.getChildren()) {
+                            int stars = idSnapshot.child("stars").getValue(Integer.class);
+                            sum += stars;
+                        }
+                        // display beach number of reviews
+                        globalNumReviewsTV.setText("Number of reviews: " + numReviews);
+                        // display calculated beach overall score
+                        globalAverageScoreTV.setText("Overall score: " + String.format("%.1f", sum/numReviews) + " stars");
+                    }
+                }
+                if(found[0] != 1) { // no reviews for beach, set the text views to default
+                    globalNumReviewsTV.setText("Number of reviews: 0");
+                    globalAverageScoreTV.setText("Overall score: none");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
     }
 
     public static String setCurrentBeachMarker(MainActivity main, Double latitude, Double longitude, String name) {
