@@ -1,5 +1,7 @@
 package com.example.socalbeach4life.fragments;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
@@ -7,6 +9,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -318,23 +321,32 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             reviewSection.setText("Reviews");
             beachInfolayout.addView(reviewSection);
 
-            // leave a review layout
+            // Review Layout
+            // Stars input
             EditText starsReview = new EditText(beachesScrollView.getContext());
             starsReview.setHint("stars");
             starsReview.setInputType(InputType.TYPE_CLASS_NUMBER);
             beachInfolayout.addView(starsReview);
+            // Comment input
+            EditText commentReview = new EditText(beachesScrollView.getContext());
+            commentReview.setHint("comment");
+            beachInfolayout.addView(commentReview);
+            // Checkbox to remain anonymous
             CheckBox remainAnonymous = new CheckBox(beachesScrollView.getContext());
             remainAnonymous.setText("hide name in review?");
             beachInfolayout.addView(remainAnonymous);
             anonymousReview = remainAnonymous;
+            // Leave review button
             Button leaveReviewButton = new Button(beachesScrollView.getContext());
             leaveReviewButton.setText("Leave a review");
             beachInfolayout.addView(leaveReviewButton);
+            // Display number of reviews
             globalNumReviews = 0;
             TextView numReviewsTV = new TextView(beachesScrollView.getContext());
             globalNumReviewsTV = numReviewsTV;
             globalNumReviewsTV.setText("Number of reviews: 0");
             beachInfolayout.addView(globalNumReviewsTV);
+            // Display review overall score
             TextView reviewsScoreTV = new TextView(beachesScrollView.getContext());
             globalAverageScoreTV = reviewsScoreTV;
             globalAverageScoreTV.setText("Overall score: none");
@@ -343,8 +355,9 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             // add new review to database and update user interface with added review
             leaveReviewButton.setOnClickListener((new View.OnClickListener() {
                 public void onClick(View v) {
+                    // hide keyboard
+                    hideKeyboard(getActivity());
                     if(starsReview.getText().toString().trim().length() > 0) {
-                        System.out.println(starsReview.getText().toString());
                         // recalculate average and number of review
                         updateScoreAndNumReview(name);
 
@@ -353,10 +366,15 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
 
                         // store review to database
                         databaseReference.child("reviews").child(name).child(strNextId)
-                                .child("stars").setValue(Integer.parseInt(starsReview.getText().toString()));
+                                .child("user_id").setValue(getActivity().getIntent().getExtras().getString("userid"));
 
                         databaseReference.child("reviews").child(name).child(strNextId)
-                                .child("user_id").setValue(getActivity().getIntent().getExtras().getString("userid"));
+                                .child("stars").setValue(Integer.parseInt(starsReview.getText().toString()));
+
+                        if(commentReview.getText().toString().trim().length() > 0) { // user left comment
+                            databaseReference.child("reviews").child(name).child(strNextId)
+                                    .child("comment").setValue(commentReview.getText().toString());
+                        }
 
                         if(!anonymousReview.isChecked()) { // user wants name to display
                             databaseReference.child("reviews").child(name).child(strNextId)
@@ -365,9 +383,27 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
 
                         // add review to layout because rendering from database not immediate
                         LinearLayout line = new LinearLayout(beachListlayout.getContext());
-                        TextView review = new TextView(beachesScrollView.getContext());
+                        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        layoutParams.setMargins(10, 10, 10, 10);
+                        line.setOrientation(LinearLayout.VERTICAL);
+
+                        TextView stars = new TextView(beachesScrollView.getContext());
+                        stars.setText("stars:" + Integer.parseInt(starsReview.getText().toString()) + " ");
+
+                        TextView comment = new TextView(beachesScrollView.getContext());
+                        comment.setText("comment:" + commentReview.getText().toString() + " ");
+
+                        TextView userName = new TextView(beachesScrollView.getContext());
+                        if(!anonymousReview.isChecked()){
+                            userName.setText(getActivity().getIntent().getExtras().getString("name") + " ");
+                        } else {
+                            userName.setText("anonymous ");
+                        }
+
                         Button deleteButton = new Button(beachesScrollView.getContext());
                         deleteButton.setText("delete");
+                        deleteButton.setMinWidth(50);
                         deleteButton.setOnClickListener((new View.OnClickListener() {
                             public void onClick(View v) {
                                 // delete from view
@@ -381,22 +417,21 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                             }
                         }));
 
-                        if(!anonymousReview.isChecked()) {
-                            review.setText("stars:" + Integer.parseInt(starsReview.getText().toString()) + " user name:"
-                                    + getActivity().getIntent().getExtras().getString("name"));
-                        } else {
-                            review.setText("stars:" + Integer.parseInt(starsReview.getText().toString()));
-                        }
-                        line.addView(review);
+                        line.addView(userName);
+                        line.addView(stars);
+                        line.addView(comment);
+
                         line.addView(deleteButton);
                         line.setBackgroundColor(Color.parseColor("gray"));
-                        globalNumReviewsTV.setText("Number of reviews: " + globalNumReviews);
-                        beachInfolayout.addView(line);
+                        beachInfolayout.addView(line, layoutParams);
+
                         TextView emptyLine = new TextView(beachListlayout.getContext());
                         emptyLine.setHeight(10);
                         beachInfolayout.addView(emptyLine);
 
+                        // clear review stars and comment fields
                         starsReview.getText().clear();
+                        commentReview.getText().clear();
                     }
 
                 }
@@ -418,19 +453,37 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                             for (DataSnapshot idSnapshot: nameSnapshot.getChildren()) {
                                 int stars = idSnapshot.child("stars").getValue(Integer.class);
                                 LinearLayout line = new LinearLayout(beachListlayout.getContext());
-                                TextView review = new TextView(beachesScrollView.getContext());
+                                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                                        LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                                layoutParams.setMargins(10, 10, 10, 10);
+                                line.setOrientation(LinearLayout.VERTICAL);
+
+                                TextView starsTV = new TextView(beachesScrollView.getContext());
+                                starsTV.setText("stars:" + stars + " ");
+
+                                TextView userNameTV = new TextView(beachesScrollView.getContext());
+                                TextView commentTV = new TextView(beachesScrollView.getContext());
                                 Button deleteButton = new Button(beachesScrollView.getContext());
                                 deleteButton.setText("delete");
+                                deleteButton.setMinWidth(50);
 
-                                // check whether to display username
+                                // check whether to user name exists
                                 if(idSnapshot.child("user_name").exists()) {
-                                    String user_name = idSnapshot.child("user_name").getValue(String.class);
-                                    review.setText("stars:" + stars + " user name:" + user_name);
-
+                                    userNameTV.setText(idSnapshot.child("user_name").getValue(String.class) + " ");
                                 } else { // no user name stored for this review
-                                    review.setText("stars:" + stars);
+                                    userNameTV.setText("anonymous ");
                                 }
-                                line.addView(review);
+
+                                // check whether comment exists
+                                if(idSnapshot.child("comment").exists()) {
+                                    commentTV.setText("comment:" +  idSnapshot.child("comment").getValue(String.class) + " ");
+                                } else { // no comment stored for this review
+                                    commentTV.setText("comment:none ");
+                                }
+
+                                line.addView(userNameTV);
+                                line.addView(starsTV);
+                                line.addView(commentTV);
 
                                 // check whether to allow review deletion (userid matches)
                                 if(idSnapshot.child("user_id").exists()) {
@@ -451,7 +504,7 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                                         }));
                                 }
                                 line.setBackgroundColor(Color.parseColor("gray"));
-                                beachInfolayout.addView(line);
+                                beachInfolayout.addView(line, layoutParams);
 
                                 TextView emptyLine = new TextView(beachListlayout.getContext());
                                 emptyLine.setHeight(10);
@@ -519,5 +572,13 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                 .position(new LatLng(latitude, longitude))
                 .title(name));
         return "hello";
+    }
+
+    public static void hideKeyboard(Activity activity) {
+        View v = activity.getWindow().getCurrentFocus();
+        if (v != null) {
+            InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+        }
     }
 }
