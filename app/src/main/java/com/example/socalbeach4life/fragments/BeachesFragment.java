@@ -131,6 +131,12 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                 View x = new View(beachListlayout.getContext());
                 TextView beachName = new TextView(beachListlayout.getContext());
                 String name = beach.name;
+                if(!name.contains("Beach")
+                        || name.contains("Department")
+                        || name.contains("Boardwalk")
+                        || name.contains("Path")
+                        || name.contains("Society")
+                        || name.contains("Camp")) continue;
                 beachName.setPadding(10, 10, 10, 10);
                 beachName.setText(name);
                 beachName.setTextSize(20);
