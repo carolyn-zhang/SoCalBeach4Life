@@ -49,6 +49,13 @@
         android:textSize="24sp"/>
 
     <Button
+        android:id="@+id/invite_button"
+        android:layout_width="160dp"
+        android:layout_marginStart="20dp"
+        android:layout_height="wrap_content"
+        android:text="Invite friends" />
+
+    <Button
         android:id="@+id/logout_button"
         android:layout_width="100dp"
         android:layout_marginStart="20dp"

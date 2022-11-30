@@ -1,6 +1,7 @@
 package com.example.socalbeach4life.fragments;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,11 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.socalbeach4life.Login;
-import com.example.socalbeach4life.MainActivity;
-import com.example.socalbeach4life.Register;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
@@ -113,6 +111,24 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+        view.findViewById(R.id.invite_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                composeEmail();
+            }
+        });
+
         return view;
+    }
+
+    public void composeEmail() {
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+        intent.putExtra(Intent.EXTRA_SUBJECT, "DOWNLOAD SOCALBEACH4LIFE");
+        intent.putExtra(Intent.EXTRA_TEXT, "Start discovering beaches and restaurants today!\n\n"
+                + "https://play.google.com/store/apps/details?id=us.socalbeach4life");
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 }
