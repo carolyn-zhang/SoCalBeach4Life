@@ -202,7 +202,7 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
             beachInfolayout.addView(returnButton, layoutParams);
 
             // restaurant radius button
-            String resRadius = "Edit Restaurant Radius (meters)";
+            String resRadius = "Edit Restaurant Radius (feet)";
             TextView resRadiusTV = new TextView(beachesScrollView.getContext());
             resRadiusTV.setText(resRadius);
             beachInfolayout.addView(resRadiusTV);
@@ -225,7 +225,7 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                                 "businesses/search",
                                 "term", "best restaurants", "latitude", String.valueOf(latitude),
                                 "longitude", String.valueOf(longitude),
-                                "radius", newRadius, "limit", "10", "sort_by", "best_match");
+                                "radius", String.valueOf(Math.round(main.restaurantsFragment.radius / 3.28)), "limit", "10", "sort_by", "best_match");
                     }
                 }));
                 radiusLayout.addView(radiusButton, buttonParams);
@@ -321,7 +321,7 @@ public class BeachesFragment extends Fragment implements YelpAsyncResponse {
                     "businesses/search",
                     "term", "best restaurants", "latitude", String.valueOf(latitude),
                      "longitude", String.valueOf(longitude),
-                    "radius", String.valueOf(main.restaurantsFragment.radius), "limit", "10", "sort_by", "best_match");
+                    "radius", String.valueOf(Math.round(main.restaurantsFragment.radius / 3.28)), "limit", "10", "sort_by", "best_match");
 
             TextView reviewSection = new TextView(beachesScrollView.getContext());
             reviewSection.setText("Reviews");

@@ -148,7 +148,7 @@ public class RestaurantsFragment extends Fragment implements YelpAsyncResponse {
             // Specifying the center of the circle
             circleOptions.center(main.currentBeach.coordinates);
             // Radius of the circle
-            circleOptions.radius(radius * 1.3);
+            circleOptions.radius(Math.round((radius * 1.3) / 3.28));
             // Border color of the circle
             circleOptions.strokeColor(Color.BLACK);
             // Fill color of the circle
