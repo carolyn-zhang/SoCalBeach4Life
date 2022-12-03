@@ -15,3 +15,21 @@ Accept location requests.
 Register a profile or login with an existing one:  
 Email: zhangcy@usc.edu  
 Password: 123
+
+**Improvements since project 2.4**:
+
+-The beaches now shown near the user will be filtered by string to ensure that it is only beaches that are being shown to the user and not location associated with beached. 
+
+-The radius for finding a restaurant around the user has been converted to feet as opposed to meters. 
+
+-An extra unit test was added to test the Result.toString() method.
+
+-The beach overall score is now calculated correctly.
+
+-The user is able to include an optional comment to a beach review as well as delete it. 
+
+-There is also a new feature that allows users to invite their friends to download the app through email notification, which is an important functionality to increase the user base of our app.
+
+-Code cleanup and refactoring for modulization.
+
+
